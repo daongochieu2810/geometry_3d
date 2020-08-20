@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Geometry 3D",
+    "slug": "geometry_3d",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/cube.png",
+    "splash": {
+      "image": "./assets/geometry3DCover.png",
+      "resizeMode": "cover"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "bundleIdentifier": "com.dnh2810.geometry3D",
+      "buildNumber": "1.0.0"
+    },
+    "android": {
+      "package": "com.dnh2810.geometry3D",
+      "versionCode": 1
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
