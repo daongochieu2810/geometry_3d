@@ -25,7 +25,7 @@ const SCREEN_WIDTH = Dimensions.get("screen").width;
 const SCREEN_HEIGHT = Dimensions.get("screen").height;
 
 export default connect(mapStateToProps, mapDispatchToProps)(AccountScreen);
-function AccountScreen() {
+function AccountScreen(props) {
     const navigation = useNavigation();
     const [currUser, setCurrUser] = useState(fb.auth.currentUser);
   return (

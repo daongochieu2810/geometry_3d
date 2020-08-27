@@ -30,7 +30,7 @@ export default function ControlPoints({
  
 
   useEffect(() => {
-    if (pointPairs.length > 0) returnPoints(pointPairs);
+    returnPoints(pointPairs);
   }, [pointPairs]);
 
   index = 0;

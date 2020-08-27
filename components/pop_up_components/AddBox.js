@@ -19,7 +19,7 @@ export default function AddBox({ returnShapes, mainScrollView }) {
     else setNewBoxes(() => []);
   };
   useEffect(() => {
-    if (newBoxes.length > 0) returnShapes(newBoxes);
+    returnShapes(newBoxes);
   }, [newBoxes]);
   return (
     <View

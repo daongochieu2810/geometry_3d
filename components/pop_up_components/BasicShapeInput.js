@@ -34,12 +34,12 @@ export default function BasicShapeInput({
 
   const validate = () => {
     if (!name) return false;
-    if (type != "custom") {
+    if (type !== "custom") {
       if (isNaN(x) || isNaN(y) || isNaN(z) || !x || !y || !z) {
         return false;
       }
     }
-    if (type != "sphere" && (isNaN(rotX) || isNaN(rotY) || isNaN(rotZ))) {
+    if (type !== "sphere" && (isNaN(rotX) || isNaN(rotY) || isNaN(rotZ))) {
       return false;
     }
     if (type === "box" && (isNaN(width) || isNaN(height) || isNaN(depth))) {
@@ -48,7 +48,25 @@ export default function BasicShapeInput({
     if (type === "sphere" && (isNaN(r) || !r)) {
       return false;
     }
+    if (type === "cone" && (isNaN(r))) {
+      return false;
+    }
     return true;
+  };
+  const resetInput = () => {
+    setNewShapes(() => []);
+    setX(null);
+    setY(null);
+    setZ(null);
+    setRotX(0);
+    setRotY(0);
+    setRotZ(0);
+    setR(null);
+    setWidth(0);
+    setHeight(0);
+    setDepth(0);
+    setName(null);
+    setError(null);
   };
   const changeColor = (colorHsvOrRgb, resType) => {
     if (resType === "end") {
@@ -107,6 +125,32 @@ export default function BasicShapeInput({
           />
         </View>
       )}
+      {type === "cone" && (<View
+          style={{
+            flexDirection: "row",
+            marginLeft: 5,
+            marginTop: 5
+          }}
+      >
+        <Text style={{ marginRight: 5, fontSize: 20 }}>r:</Text>
+        <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            onChangeText={(text) => {
+              setR(() => text);
+            }}
+            value={r}
+        />
+        <Text style={{ marginRight: 5, fontSize: 20 }}>h:</Text>
+        <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            onChangeText={(text) => {
+              setHeight(() => text);
+            }}
+            value={height}
+        />
+      </View>)}
       {type === "box" && (
         <View
           style={{
@@ -144,7 +188,7 @@ export default function BasicShapeInput({
           />
         </View>
       )}
-      {type != "sphere" && type != "custom" && (
+      {type !== "sphere" && type !== "custom" && (
         <>
           <Text style={{ marginTop: 5 }}>Rotations</Text>
           <View
@@ -282,20 +326,27 @@ export default function BasicShapeInput({
                 id: newShapes.length,
                 chosen: false,
               };
+            } else if (type === "cone") {
+              newShape = {
+                item: {
+                  position: { x: x, y: y, z: z },
+                  sizes: { radius: r, height: height },
+                  rotation: {
+                    x: (rotX / 180) * Math.PI,
+                    y: (rotY / 180) * Math.PI,
+                    z: (rotZ / 180) * Math.PI,
+                  },
+                  color: color,
+                  name: name,
+                  type: "cone",
+                },
+                id: newShapes.length,
+                chosen: false,
+              };
             }
             setNewShapes(() => [...newShapes, newShape]);
             inputCallback(newShape);
-            setX(null);
-            setY(null);
-            setZ(null);
-            setRotX(0);
-            setRotY(0);
-            setRotZ(0);
-            setR(null);
-            setWidth(0);
-            setHeight(0);
-            setDepth(0);
-            setName(null);
+
           }}
         >
           <Text>Add</Text>
@@ -312,19 +363,7 @@ export default function BasicShapeInput({
           }}
           onPress={() => {
             //if (isMounted) {
-            setNewShapes(() => []);
-            setX(null);
-            setY(null);
-            setZ(null);
-            setRotX(0);
-            setRotY(0);
-            setRotZ(0);
-            setR(null);
-            setWidth(0);
-            setHeight(0);
-            setDepth(0);
-            setName(null);
-            setError(null);
+            resetInput();
             inputCallback(null);
             //}
           }}
@@ -342,19 +381,7 @@ export default function BasicShapeInput({
           }}
           onPress={() => {
             //if (isMounted) {
-            setNewShapes(() => []);
-            setX(null);
-            setY(null);
-            setZ(null);
-            setRotX(0);
-            setRotY(0);
-            setRotZ(0);
-            setR(null);
-            setWidth(0);
-            setHeight(0);
-            setDepth(0);
-            setName(null);
-            setError(null);
+            resetInput();
             inputCallback(null);
             mainScrollView.scrollTo({ x: 0, y: 0, animated: true });
             //}

@@ -10,6 +10,14 @@ const setScene = (data) => ({
   type: "SET_SCENE",
   scene: data,
 });
+const setRaycaster = (data) => ({
+  type: "SET_RAYCASTER",
+  raycaster: data,
+});
+const setIntersects = (data) => ({
+  type: "SET_INTERSECTS",
+  intersects: data,
+});
 const setRenderer = (data) => ({
   type: "SET_RENDERER",
   renderer: data,
@@ -78,5 +86,7 @@ export default {
   removeSaveItem,
   setCurrentUser,
   setSaveItem,
-  setCanRetrieve
+  setCanRetrieve,
+  setRaycaster,
+  setIntersects
 };

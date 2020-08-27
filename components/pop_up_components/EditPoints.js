@@ -5,7 +5,7 @@ import * as THREE from "three";
 const SCREEN_WIDTH = Dimensions.get("screen").width;
 const SCREEN_HEIGHT = Dimensions.get("screen").height;
 export default function EditPoints({ currentPoints, returnPoints, isAdd }) {
-    var _pointInput = currentPoints.map((item, index) => ({
+    let _pointInput = currentPoints.map((item, index) => ({
         item: item,
         id: index,
         chosen: false,
@@ -19,7 +19,8 @@ export default function EditPoints({ currentPoints, returnPoints, isAdd }) {
     const [name, setName] = useState("");
     const [error, setError] = useState(null);
     useEffect(() => {
-        if (newPoints.length > 0) returnPoints(newPoints);
+        //console.log(newPoints.length);
+       returnPoints(newPoints);
     }, [newPoints]);
 
     const exist = (newName) => {
@@ -69,7 +70,7 @@ export default function EditPoints({ currentPoints, returnPoints, isAdd }) {
                             setNewPoints(() => [...newPoints, pointInput[item.id]]);
                         } else {
                             setNewPoints(() =>
-                                newPoints.filter((point) => point.id != item.id)
+                                newPoints.filter((point) => point.id !== item.id)
                             );
                         }
                         setPointInput(() => [...pointInput]);

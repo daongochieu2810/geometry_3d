@@ -7,20 +7,15 @@ import { useNavigation } from "react-navigation-hooks";
 import { NavigationActions } from "react-navigation";
 import fb from '../../backend';
 import Spinner from "../../Spinner";
-import * as THREE from 'three';
 import Toast from 'react-native-toast-message';
-import {getJSON} from '../../components/common/GetJSONFromURL'
 import Dialog, {
   SlideAnimation,
   DialogButton,
   DialogFooter,
 } from "react-native-popup-dialog";
-import {createTextGeoFromPosition, drawEdgesFromGeo} from '../../components/helper/ShapeHelper'
+import {deleteItemFireStore, deleteItemStorage, clearItemFireStore} from '../../components/helper/DatabaseHelper';
 const mapDispatchToProps = (dispatch) => {
   return {
-    reduxRemoveSaveItem: (item) => {
-      dispatch(actions.removeSaveItem(item));
-    },
       reduxSetSaveItem: (items) => {
         dispatch(actions.setSaveItem(items));
       },
@@ -43,7 +38,6 @@ const SCREEN_HEIGHT = Dimensions.get("screen").height;
 
 export default connect(mapStateToProps, mapDispatchToProps)(SavedItemScreen);
 function SavedItemScreen(props) {
-   // console.log(props)
     const saveItemsHolder = [...props.saveComponents.items];
   const navigation = useNavigation();
   const [saveItems, setSaveItems] = useState(saveItemsHolder.map(item => ({...item, showOptions: false})));
@@ -54,7 +48,10 @@ function SavedItemScreen(props) {
   const [chosenItem, setChosenItem] = useState(null);
   const [newName, setNewName] = useState("");
     useEffect(() => {
-        if(newScene) setSaveItems(() => [newScene, ...saveItems]);
+        if(newScene) {
+            setSaveItems(() => [newScene, ...saveItems]);
+            props.reduxAddSaveItem(newScene);
+        }
     },[newScene]);
     const ifExist = (fileName) => {
         for(let item of saveItems) {
@@ -64,50 +61,17 @@ function SavedItemScreen(props) {
     };
     const retrieveSyncedItems = () => {
         setIsLoading(() => true);
-        //setSyncedItems(() => []);
-        let counter = 0;
         fb.userCollection.doc(fb.auth.currentUser.uid).get().then(doc => {
             const data = doc.data();
             setUserData(() => {
                 uid: data.uid
             });
-            //const loader = new THREE.ObjectLoader();
             for(let url of data.scenes) {
                 fetch(url)
                     .then(res => {
-                        //console.log(url);
                         return res.json();
                     })
                     .then((data) => {
-                       /* let lines = [];
-                        let points = [];
-                        let shapes = [];
-                        for(let line of data.lines) {
-                            lines.push({
-                                line: loader.parse(line.line),
-                                text: line.text
-                            });
-                        }
-                        for(let point of data.points) {
-                            const vertex = point.position;
-                            const text = createTextGeoFromPosition(vertex, point.trueText);
-                            points.push({
-                                text: text,
-                                trueText: point.trueText,
-                                position: vertex
-                            });
-                    }
-                        for(let shape of data.shapes) {
-                            const object = loader.parse(shape.object);
-                            const edges = drawEdgesFromGeo(object.geometry);
-                    shapes.push({
-                        object: object,
-                        edges: edges,
-                        name: shape.name,
-                        color: shape.color,
-                        id: shape.id
-                    });
-                }*/
                         let newItem = {
                             fileName: data.fileName,
                             name: data.name,
@@ -115,11 +79,11 @@ function SavedItemScreen(props) {
                             shapes: data.shapes,
                             points: data.points,
                             isSynced: true,
-                            showOptions: false
+                            showOptions: false,
+                            url: url
                         };
                         if(!ifExist(newItem.fileName)) {
                             setNewScene(() => (newItem));
-                            props.reduxAddSaveItem(newItem);
                         }
 
             })
@@ -139,13 +103,12 @@ function SavedItemScreen(props) {
         setIsLoading(() => true);
         const currUser = fb.auth.currentUser;
         const storageRef = fb.storage.ref();
-        const _saveItems = [];
+        let _saveItems = [];
 
         for(let item of saveItems) {
-            //item.isSynced = true;
             if(!item.isSynced) {
                 item.isSynced = true;
-                _saveItems.push({...item});
+                _saveItems.push(item);
             }
         }
         if(_saveItems.length === 0) {
@@ -162,16 +125,15 @@ function SavedItemScreen(props) {
         }
         let counter = 0;
         for(let item of _saveItems) {
-            const refScene = storageRef.child(`/${currUser.uid}/scenes/${item.name}.json`);
-                /*item.points = item.points.map(item => ({
-                    position: item.text.position,
-                    trueText: item.trueText
-                }));*/
-            var json = JSON.stringify(item);
-            var fileBlob = new Blob([json], {type: 'application/json'});
+            const refScene = storageRef.child(`/${currUser.uid}/scenes/${item.fileName}.json`);
+            let json = JSON.stringify(item);
+            let fileBlob = new Blob([json], {type: 'application/json'});
             refScene.put(fileBlob).then((snapshot) => {
-                snapshot.ref.getDownloadURL().then(url => fb.userCollection.doc(fb.auth.currentUser.uid)
-                    .update({scenes: fb.FieldValue.arrayUnion(url)}));
+                snapshot.ref.getDownloadURL().then(url => {
+                    item.url = url;
+                    fb.userCollection.doc(fb.auth.currentUser.uid)
+                    .update({scenes: fb.FieldValue.arrayUnion(url)})
+                });
                 counter++;
                 if(counter === _saveItems.length) {
                     Toast.show({
@@ -221,6 +183,7 @@ function SavedItemScreen(props) {
             backgroundColor: 'red',
             borderRadius: 5,
           }}
+          disabled={saveItems.length <= 0}
           onPress={() => {
             if(saveItems.length > 0) setVisible(true)
           }}
@@ -261,7 +224,8 @@ function SavedItemScreen(props) {
                     params: {
                       shapes: JSON.stringify(item.shapes),
                       lines: JSON.stringify(item.lines),
-                      points: JSON.stringify(item.points)
+                      points: JSON.stringify(item.points),
+                        fileName: item.fileName
                     },
                   })
                 );
@@ -284,7 +248,7 @@ function SavedItemScreen(props) {
           </View>
         )}
       />
-        {saveItems.length > 0 && <TouchableOpacity style={{
+        {saveItems.length > 0 && fb.auth.currentUser && <TouchableOpacity style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
             borderRadius: 5,
@@ -296,20 +260,20 @@ function SavedItemScreen(props) {
         }}>
             <Text style={{textAlign: 'center'}}>Sync with online account</Text>
         </TouchableOpacity>}
-        <TouchableOpacity style={{
+        { fb.auth.currentUser && <TouchableOpacity style={{
             paddingHorizontal: 10,
             paddingVertical: 5,
             borderRadius: 5,
             borderWidth: 1,
-            borderColor: props.miscData.canRetrieve ? '#34c6eb' : '#a1a1a1',
+            borderColor: '#34c6eb',
             marginTop: 10
-        }} //disabled={!props.miscData.canRetrieve}
+        }}
                           onPress={() => {
             retrieveSyncedItems();
             props.reduxSetCanRetrieve(false);
         }}>
-            <Text style={{textAlign: 'center', color: props.miscData.canRetrieve ? 'black' : '#a1a1a1'}}>Retrieve synced items</Text>
-        </TouchableOpacity>
+            <Text style={{textAlign: 'center', color: 'black'}}>Retrieve synced items</Text>
+        </TouchableOpacity>}
        <Dialog
         visible={visible}
         dialogAnimation={
@@ -336,10 +300,11 @@ function SavedItemScreen(props) {
             <DialogButton
               text={chosenItem ? "DONE" : "YES"}
               onPress={() => {
+                  setVisible(() => false);
                   if(!chosenItem) {
                       props.reduxSetSaveItem([]);
                       setSaveItems(() => []);
-                      setVisible(() => false);
+                      clearItemFireStore();
                   } else {
                       if(newName !== "") {
                           const filtered = saveItems.map(item => {
@@ -353,7 +318,6 @@ function SavedItemScreen(props) {
                       }
                       setChosenItem(() => null);
                       setNewName(() => "");
-                      setVisible(() => false);
                   }
               }}
               textStyle={{
@@ -389,11 +353,19 @@ function SavedItemScreen(props) {
                borderRadius: 5,
                marginTop: 20
            }} onPress={() => {
+               setVisible(() => false);
                const filtered = saveItems.filter(item => item !== chosenItem);
                setSaveItems(() => filtered);
                props.reduxSetSaveItem(filtered);
-               setChosenItem(() => null);
-               setVisible(() => false);
+               if(chosenItem.url !== "") {
+                   deleteItemFireStore(chosenItem.url).then(() => {
+                       deleteItemStorage(chosenItem.fileName).then(() => {
+                           setChosenItem(() => null);
+                       })
+                   });
+               } else {
+                   setChosenItem(() => null);
+               }
            }
            }><Text style={{color: 'red', textAlign: 'center'}}>Delete</Text></TouchableOpacity>
            </View> : <Text style={{fontSize: 20, textAlign: 'center', marginVertical: 20}}>Are you sure ?</Text>}

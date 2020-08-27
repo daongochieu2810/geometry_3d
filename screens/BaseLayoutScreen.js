@@ -46,13 +46,14 @@ export default function BaseLayoutScreen(props) {
   const params = props.params;
   THREE.suppressExpoWarnings(true);
   //const [savedState, setSavedState] = useState(null)
-  var savedState = null;
+  let savedState = null;
   //console.log(props)
   if (params) {
-    var currSavedState = {
+    let currSavedState = {
       shapes: params.shapes,
       lines: params.lines,
       points: params.points,
+      fileName: params.fileName
     };
     savedState = currSavedState;
     //setSavedState(() => currSavedState)
@@ -83,35 +84,17 @@ export default function BaseLayoutScreen(props) {
     setCurrShapes(() => listOfShapes);
   };
   const connectPoints = (pointsToConnect) => {
-    setIsFromShape(() => false);
+    //setIsFromShape(() => false);
     setPointsConnect(() => pointsToConnect);
   };
-  const connectShapes = (shapesToConect) => {
-    setIsFromShape(() => true);
-    //console.log(shapesToConect.length);
-    setShapesConnect(() => shapesToConect);
+  const connectShapes = (shapesToConnect) => {
+    //setIsFromShape(() => true);
+    setShapesConnect(() => shapesToConnect);
   };
   const editPoints = (pointsToEdit) => {
-    //console.log(pointsToEdit);
-    setIsFromShape(() => false);
+    //console.log(pointsToEdit.length);
     setPointsEdit(() => pointsToEdit);
-  }
-  /*useEffect(() => {
-    console.log("checking")
-    if (props.basicComponents.points != null) {
-      console.log(props.basicComponents.points.length)
-      const processed = props.basicComponents.points.map((item) => {
-        return {
-          point: item.text.position,
-          text: item.trueText,
-        };
-      })
-      setCurrPoints(() =>
-        [...processed]
-      );
-    }
-  }, [props.basicComponents.points]);
-*/
+  };
   const cards = [
     {
       index: 0,
@@ -202,7 +185,7 @@ export default function BaseLayoutScreen(props) {
         Toast.show({
           type: "success",
           position: "top",
-          text1: `${pointsEdit.length} line(s) removed`,
+          text1: `${pointsEdit.length} point(s) removed`,
           text2: "Success",
           visibilityTime: 3000,
           autoHide: true,
@@ -218,7 +201,7 @@ export default function BaseLayoutScreen(props) {
         autoHide: true,
       });
     }
-  }
+  };
   const onPointsPopUpDone = () => {
     if (pointsConnect.length >= 1 && action === "disconnect_points") {
       setSignalPoints(() => !signalPoints);
@@ -253,7 +236,7 @@ export default function BaseLayoutScreen(props) {
     //setPointsConnect(() => []);
   };
   const onShapesPopUpDone = () => {
-    if (shapesConnect.length == 0) {
+    if (shapesConnect.length === 0) {
       Toast.show({
         type: "error",
         position: "top",
@@ -327,10 +310,12 @@ export default function BaseLayoutScreen(props) {
               onPress={() => {
                 setVisible(false);
                 if (!isFromShape) {
-                  if(action === "remove_points" || action === "add_points") onPointsEditPopUpDone();
-                  else onPointsPopUpDone();
+                    if ((action === "remove_points" || action === "add_points") && pointsEdit) onPointsEditPopUpDone();
+                    else if (pointsConnect) onPointsPopUpDone();
                 }
-                else onShapesPopUpDone();
+                else {
+                  if (shapesConnect) onShapesPopUpDone();
+                }
                 setPopUpComp(null);
               }}
               textStyle={{
@@ -396,6 +381,11 @@ export default function BaseLayoutScreen(props) {
                   margin: 5,
                 }}
                 onPress={() => {
+                  if (item.action === "add_shapes" || item.action === "remove_shapes") {
+                    setIsFromShape(() => true);
+                  } else {
+                    setIsFromShape(() => false);
+                  }
                   setVisible(true);
                   setPointsConnect(() => []);
                   setAction(() => item.action);

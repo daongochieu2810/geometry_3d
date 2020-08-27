@@ -41,21 +41,21 @@ export const getVerticesWithText = (mesh, type) => {
     });
   } else {
     for (let i = 0; i < numVertices; i++) {
-      var point = new THREE.Vector3(
+      let point = new THREE.Vector3(
         positions[i * numSkip],
         positions[i * numSkip + 1],
         positions[i * numSkip + 2]
       );
       if (type === "octahedron") {
-        if (i == 2) point.x *= -1;
-        if (i == 1) point.z *= -1;
+        if (i === 2) point.x *= -1;
+        if (i === 1) point.z *= -1;
       } else if (type === "prism") {
-        if (i == 3 && pointHolder) {
+        if (i === 3 && pointHolder) {
           point.x = pointHolder.x
           point.z = pointHolder.z
           point.y = -pointHolder.y
         }
-        if(i == 2) {
+        if(i === 2) {
           pointHolder = point
         }
       }
@@ -74,19 +74,22 @@ export const createTextGeoFromPosition = (vertex, trueText) => {
     size: 0.5,
     height: 0.01,
   });
-  var textMaterial = new THREE.MeshBasicMaterial({
+  let textMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
   });
-  var text = new THREE.Mesh(textGeo, textMaterial);
+  let text = new THREE.Mesh(textGeo, textMaterial);
   text.position.set(vertex.x, vertex.y, vertex.z);
   return text;
 };
-export const drawEdgesFromGeo = (geometry) => {
+export const drawEdgesFromGeo = (geometry, rotation, position) => {
   const edges = new THREE.EdgesGeometry(geometry);
   const line = new THREE.LineSegments(
       edges,
       new THREE.LineBasicMaterial({ color: 0xffffff })
   );
+  if (position) line.position.set(position.x, position.y, position.z);
+  if (rotation) line.rotation.set(rotation.x, rotation.y, rotation.z);
+  //line.position.set(...geometry.position);
   return line;
 };
 export const createTetraHedron = (scene) => {

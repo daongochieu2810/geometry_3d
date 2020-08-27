@@ -116,7 +116,7 @@ export default function ControlShapes({
         >
           <Options mainScrollView={mainScrollView} />
           <AddBox returnShapes={returnShapes} mainScrollView={mainScrollView} />
-          <AddCone />
+          <AddCone returnShapes={returnShapes} mainScrollView={mainScrollView} />
           <AddSphere
             returnShapes={returnShapes}
             mainScrollView={mainScrollView}

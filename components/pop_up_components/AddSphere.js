@@ -19,7 +19,7 @@ export default function AddSphere({ returnShapes, mainScrollView }) {
     else setNewSpheres(() => []);
   };
   useEffect(() => {
-    if (newSpheres.length > 0) returnShapes(newSpheres);
+    returnShapes(newSpheres);
   }, [newSpheres]);
   return (
     <View

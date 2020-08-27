@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, PanResponder, Text, TouchableOpacity } from "react-native";
+import {View, PanResponder, Text, TouchableOpacity, Animated, Dimensions, Vibration} from "react-native";
 import UniCameraHandler from "./UniCameraHandler";
 import ExpoTHREE from "expo-three";
 global.Image = undefined;
@@ -13,6 +13,7 @@ import {
 } from "../../components/helper/ShapeHelper";
 import { ConvexBufferGeometry } from "three/examples/jsm/geometries/ConvexGeometry";
 import Toast from "react-native-toast-message";
+const LONG_PRESS_MIN_DURATION = 800;
 const mapDispatchToProps = (dispatch) => {
   return {
     reduxSetBasicComponents: (components) => {
@@ -20,6 +21,8 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(actions.setCameraHandler(components.cameraHandler));
       dispatch(actions.setRenderer(components.renderer));
       dispatch(actions.setScene(components.scene));
+      dispatch(actions.setIntersects(components.intersects));
+      dispatch(actions.setRaycaster(components.raycaster));
     },
     reduxSetPoint: (points) => {
       dispatch(actions.setPoints(points));
@@ -45,11 +48,15 @@ const mapDispatchToProps = (dispatch) => {
     reduxAddSaveItem: (item) => {
       dispatch(actions.addSaveItem(item));
     },
+    reduxSetSaveItem: (items) => {
+      dispatch(actions.setSaveItem(items));
+    }
   };
 };
 const mapStateToProps = (state) => {
   return {
     basicComponents: state.basicComponents,
+    saveComponents: state.saveComponents
   };
 };
 const months = [
@@ -67,12 +74,19 @@ const months = [
   "December",
 ];
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-export default connect(mapStateToProps, mapDispatchToProps)(LayoutSetup);
+const { height, width } = Dimensions.get("window");
 
+export default connect(mapStateToProps, mapDispatchToProps)(LayoutSetup);
 function LayoutSetup(props) {
-  //var listOfObjects = []
   const raw_font = require("../../assets/fonts/bebas_neue.typeface.json");
   const font = new THREE.Font(raw_font);
+  const [pan, setPan] = useState(new Animated.ValueXY());
+  const [mouse, setMouse] = useState(new THREE.Vector2(-10, -10));
+  const [val, setVal] = useState({ x: 0, y: 0 });
+  const [longPressTimeout, setLongPressTimeout] = useState(null);
+  const [disableCamera, setDisableCamera] = useState(false);
+  const [prevX, setPrevX] = useState(null);
+  const [prevY, setPrevY] = useState(null);
 
   const _transformEvent = (event) => {
     event.preventDefault = event.preventDefault || (() => {});
@@ -91,7 +105,6 @@ function LayoutSetup(props) {
     const minutes = dateObject.getMinutes();
     const seconds = dateObject.getSeconds(); 
     return `${hours}:${minutes < 10 ? '0' + minutes.toString() : minutes.toString()}:${seconds}, ${dayName}, ${date} ${monthName} ${year}`;
-    //console.log(formatted); 
   };
   //Should we become active when the user presses down on the square?
   const handleStartShouldSetPanResponder = () => {
@@ -101,18 +114,40 @@ function LayoutSetup(props) {
   // We were granted responder status! Let's update the UI
   const handlePanResponderGrant = (e, gestureState) => {
     const event = _transformEvent({ ...e, gestureState });
-    //		  console.log(event
-    props.basicComponents.cameraHandler.handlePanResponderGrant(
+      setLongPressTimeout(() => setTimeout(function() {
+            console.log("long_press");
+            Vibration.vibrate();
+            setDisableCamera(() => !disableCamera);
+          },
+          LONG_PRESS_MIN_DURATION));
+    pan.setOffset({
+      x: val.x,
+      y: val.y
+    });
+    pan.setValue({ x: -10, y: -10 });
+    mouse.x =
+        (event.nativeEvent.pageX / width) * 2 - 1;
+    mouse.y =
+        -(event.nativeEvent.pageY / height) * 2 + 1;
+    if (!disableCamera) props.basicComponents.cameraHandler.handlePanResponderGrant(
       event.nativeEvent
     );
   };
-
+  const distance = (x,y,x1,y1) => {
+    return Math.sqrt((x1 - x)*(x1 - x) + (y1 -y)*(y1-y));
+  }
   // Every time the touch/mouse moves
   const handlePanResponderMove = (e, gestureState) => {
     // Keep track of how far we've moved in total (dx and dy)
     const event = _transformEvent({ ...e, gestureState });
-    //  console.log(event)
-    props.basicComponents.cameraHandler.handlePanResponderMove(
+     if((!prevX || !prevY) || (distance(prevX, prevY, event.nativeEvent.pageX, event.nativeEvent.pageY) > 2)) clearTimeout(longPressTimeout);
+    setPrevX(() => event.nativeEvent.pageX);
+    setPrevY(() => event.nativeEvent.pageY);
+    mouse.x =
+        (event.nativeEvent.pageX / width) * 2 - 1;
+    mouse.y =
+        -(event.nativeEvent.pageY / height) * 2 + 1;
+    if (!disableCamera) props.basicComponents.cameraHandler.handlePanResponderMove(
       event.nativeEvent,
       gestureState
     );
@@ -121,14 +156,15 @@ function LayoutSetup(props) {
   // When the touch/mouse is lifted
   const handlePanResponderEnd = (e, gestureState) => {
     const event = _transformEvent({ ...e, gestureState });
-    //		  console.log(event)
-    //if(cameraHandler != null)
-
-    props.basicComponents.cameraHandler.handlePanResponderEnd(
+    clearTimeout(longPressTimeout);
+    mouse.x = -10;
+    mouse.y = -10;
+    if (!disableCamera) props.basicComponents.cameraHandler.handlePanResponderEnd(
       event.nativeEvent
     );
   };
 
+  pan.addListener((value) => (setVal(() => value)));
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: handleStartShouldSetPanResponder,
     onPanResponderGrant: handlePanResponderGrant,
@@ -150,63 +186,58 @@ function LayoutSetup(props) {
     }
   }; //, [props.basicComponents.points]);
   const loadFont = (listOfVertices) => {
-    var listOfObjects = [];
+    let listOfObjects = [];
     for (let item of listOfVertices) {
-      const vertice = item.point;
+      const vertex = item.point;
       const textGeo = new THREE.TextGeometry(item.text, {
         font: font,
         size: 0.5,
         height: 0.01,
       });
-      var textMaterial = new THREE.MeshBasicMaterial({
+      let textMaterial = new THREE.MeshBasicMaterial({
         color: 0xffffff,
       });
-      //var edges = new THREE.EdgesGeometry(textGeo);
-      //var line = new THREE.LineSegments(
-      //  edges,
-      //  new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 })
-      //);
-      var text = new THREE.Mesh(textGeo, textMaterial);
+      let text = new THREE.Mesh(textGeo, textMaterial);
       props.basicComponents.scene.add(text);
-      text.position.set(vertice.x, vertice.y, vertice.z);
-      //line.position.set(vertice.x, vertice.y, vertice.z);
-
+      text.position.set(vertex.x, vertex.y, vertex.z);
       text.quaternion.copy(props.basicComponents.camera.quaternion);
-      //line.quaternion.copy(props.basicComponents.camera.quaternion);
 
-      var point = {
+      let point = {
         text: text,
-        position: vertice,
+        position: vertex,
         trueText: item.text,
       };
       listOfObjects.push(point);
     }
-    var holder =
-      props.basicComponents.points == null ? [] : props.basicComponents.points;
-    //console.log("change in setup");
+    let holder = props.basicComponents.points == null ? [] : props.basicComponents.points;
     props.reduxSetPoint([...listOfObjects, ...holder]);
-    //console.log(props.basicComponents.points.length);
     updatePoints();
   };
 
+  const over = () => {
+  };
+  const out = () => {
+  };
+
   const onContextCreate = ({ gl, width, height, scale }) => {
-    //console.log(width, height);
     if (props.basicComponents.scene) props.basicComponents.scene.dispose();
     props.reduxSetPoint([]);
     props.reduxSetLine([]);
     props.reduxSetShape([]);
 
-    var renderer = new ExpoTHREE.Renderer({ gl });
+    let renderer = new ExpoTHREE.Renderer({ gl });
     renderer.setPixelRatio(scale);
     renderer.setSize(width, height);
-
     renderer.setClearColor(0x000000, 1.0);
 
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(100, width / height, 0.1, 1000);
+    const raycaster = new THREE.Raycaster();
+    let intersects = null;
+
+    let scene = new THREE.Scene();
+    let camera = new THREE.PerspectiveCamera(100, width / height, 0.1, 1000);
 
     //grid size = 2pixI
-    var geometry = null;
+    let geometry = null;
     switch (props.initShape) {
       case "cube": {
         geometry = new THREE.BoxBufferGeometry(5, 5, 5);
@@ -234,21 +265,6 @@ function LayoutSetup(props) {
       }
       default: {
         if (props.savedState) {
-         /* try {
-            for (let shape of props.savedState.shapes) {
-              scene.add(shape.object, shape.edges);
-            }
-            for (let point of props.savedState.points) {
-              scene.add(point.text);
-            }
-            for (let line of props.savedState.lines) {
-              scene.add(line.line);
-            }
-            if (props.savedState.points && props.savedState.points.length > 0) {
-              props.reduxSetPoint([...props.savedState.points]);
-              updatePoints();
-            }
-          } catch (e) {*/
             const data = props.savedState;
             data.lines = JSON.parse(data.lines);
             data.shapes = JSON.parse(data.shapes);
@@ -266,18 +282,27 @@ function LayoutSetup(props) {
                     }
                     props.reduxSetPoint([...points]);
                     updatePoints();
+                    let shapesHolder = [];
                     for(let shape of data.shapes) {
                       const object = loader.parse(shape.object);
-                      const edges = drawEdgesFromGeo(object.geometry);
+                      const edges = drawEdgesFromGeo(object.geometry, shape.rotation, shape.position);
                       scene.add(object, edges);
+                      shapesHolder.push({
+                        object: object,
+                        color: shape.color,
+                        edges: edges,
+                        name: shape.name,
+                        id: shape.id,
+                        rotation: shape.rotation,
+                        position: shape.position
+                      });
                     }
+          props.reduxSetShape(shapesHolder);
+          props.getShapesCallback(props.basicComponents.shapes);
           }
-      //  }
         break;
       }
-    };
-    //new THREE.SphereBufferGeometry(100, 36, 36);
-    //geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+    }
 
     const material = new THREE.MeshBasicMaterial({
       color: 0xe7ff37,
@@ -285,25 +310,23 @@ function LayoutSetup(props) {
       transparent: true,
       side: THREE.DoubleSide,
     });
-    //var newMesh = new THREE.Mesh(geometry, material);
     const axisHelper = new THREE.AxesHelper(200);
-    //mesh.add(axisHelper)
-    const cameraHandler = new UniCameraHandler(camera); //new CameraHandler(container, camera, mesh, line, axisHelper);
+    const cameraHandler = new UniCameraHandler(camera);
     const plane = new THREE.GridHelper(200, 200, "#ff3700");
 
     scene.add(plane, axisHelper);
-    //createTetraHedron(scene);
-    //newMesh.position.set(2.5, 2.5, 2.5);
     props.reduxSetBasicComponents({
       camera: camera,
       cameraHandler: cameraHandler,
       scene: scene,
       renderer: renderer,
+      raycaster: raycaster,
+      intersects: intersects
     });
     if (geometry) {
-      var mesh = new THREE.Mesh(geometry, material);
-      var edges = new THREE.EdgesGeometry(geometry);
-      var line = new THREE.LineSegments(
+      let mesh = new THREE.Mesh(geometry, material);
+      let edges = new THREE.EdgesGeometry(geometry);
+      let line = new THREE.LineSegments(
         edges,
         new THREE.LineBasicMaterial({ color: 0xffffff })
       );
@@ -322,9 +345,37 @@ function LayoutSetup(props) {
       loadFont(getVerticesWithText(mesh, props.initShape));
     }
   };
-
+  let INTERSECTED = null;
   const onRender = (delta) => {
     props.basicComponents.cameraHandler.render(props.basicComponents.points);
+    props.basicComponents.raycaster.setFromCamera(mouse, props.basicComponents.camera);
+    props.basicComponents.intersects = props.basicComponents.raycaster.intersectObjects(props.basicComponents.shapes.map(item => item.object), false);
+    const intersects = props.basicComponents.intersects;
+    if ( intersects.length > 0 )
+    {
+      // if the closest object intersected is not the currently stored intersection object
+      if ( intersects[ 0 ].object !== INTERSECTED )
+      {
+        // restore previous intersection object (if it exists) to its original color
+        if ( INTERSECTED )
+          INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+        // store reference to closest object as current intersection object
+        INTERSECTED = intersects[ 0 ].object;
+        // store color of closest object (for later restoration)
+        INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+        // set a new color for closest object
+        INTERSECTED.material.color.setHex( 0xffffff );
+      }
+    }
+    else // there are no intersections
+    {
+      // restore previous intersection object (if it exists) to its original color
+      if ( INTERSECTED )
+        INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+      // remove previous intersection object reference
+      //     by setting current intersection object to "nothing"
+      INTERSECTED = null;
+    }
     props.basicComponents.renderer.render(
       props.basicComponents.scene,
       props.basicComponents.camera
@@ -340,9 +391,8 @@ function LayoutSetup(props) {
     points = null,
     name
   ) => {
-    var geometry = null;
-    var material = null;
-    //console.log(color)
+    let geometry = null;
+    let material = null;
     switch (type) {
       case "box": {
         geometry = new THREE.BoxBufferGeometry(
@@ -378,7 +428,15 @@ function LayoutSetup(props) {
           color: color ? new THREE.Color(color) : 0xe7ff37,
           opacity: 0.5,
           transparent: true,
-          //side: THREE.DoubleSide,
+        });
+        break;
+      }
+      case "cone": {
+        geometry = new THREE.ConeBufferGeometry(sizes.radius, sizes.height, sizes.radius * 7);
+        material = new THREE.MeshBasicMaterial({
+          color: color ? new THREE.Color(color) : 0xe7ff37,
+          opacity: 0.5,
+          transparent: true,
         });
         break;
       }
@@ -386,12 +444,10 @@ function LayoutSetup(props) {
         break;
       }
     }
-    //geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
-    var mesh = new THREE.Mesh(geometry, material);
-    //mesh.position.set(position.x, position.y, position.z);
-    //var newMesh = new THREE.Mesh(geometry, material);
-    var edges = new THREE.EdgesGeometry(geometry);
-    var line = new THREE.LineSegments(
+
+    let mesh = new THREE.Mesh(geometry, material);
+    let edges = new THREE.EdgesGeometry(geometry);
+    let line = new THREE.LineSegments(
       edges,
       new THREE.LineBasicMaterial({ color: 0xffffff })
     );
@@ -410,6 +466,8 @@ function LayoutSetup(props) {
       color: color,
       name: name,
       id: props.basicComponents.shapes.length,
+      rotation: rotation,
+      position: position
     });
     props.getShapesCallback(props.basicComponents.shapes);
   };
@@ -422,16 +480,16 @@ function LayoutSetup(props) {
       }
       return item.item.point;
     });
-    var lineName = "";
+    let lineName = "";
     for (let index = 0; index < points.length; index++) {
-      var item = points[index];
+      let item = points[index];
       lineName += item.item.text;
-      if (index != points.length - 1) lineName += "-";
+      if (index !== points.length - 1) lineName += "-";
     }
     loadFont(newPoints);
-    var geometry = new THREE.BufferGeometry().setFromPoints(actualPoints);
-    var material = new THREE.LineBasicMaterial({ color: 0xffffff });
-    var newLine = new THREE.Line(geometry, material);
+    let geometry = new THREE.BufferGeometry().setFromPoints(actualPoints);
+    let material = new THREE.LineBasicMaterial({ color: 0xffffff });
+    let newLine = new THREE.Line(geometry, material);
     props.basicComponents.scene.add(newLine);
     props.reduxAddLine({ line: newLine, text: lineName });
     props.getLinesCallback(props.basicComponents.lines);
@@ -439,7 +497,7 @@ function LayoutSetup(props) {
 
   const disconnectPoints = (lines) => {
     for (let line of lines) {
-      var realLine = line.item.line;
+      let realLine = line.item.line;
       props.basicComponents.scene.remove(realLine);
       props.reduxRemoveLine(line.item);
       props.getLinesCallback(props.basicComponents.lines);
@@ -449,7 +507,6 @@ function LayoutSetup(props) {
   const addShapes = (shapes) => {
     for (let shape of shapes) {
       if (shape.item.type) {
-        //console.log(shape.item)
         addBasicShapes(
           shape.item.type,
           shape.item.position,
@@ -471,15 +528,11 @@ function LayoutSetup(props) {
     props.getShapesCallback(props.basicComponents.shapes);
   };
   const addPoints = (points) => {
-    var holder = [];
+    let holder = [];
     for (let point of points) {
       holder.push(point.item);
-      //props.basicComponents.scene.add(point.item.item.text);
     }
     loadFont(holder);
-    //props.reduxSetPoint([...props.basicComponents.points, ...holder]);
-    //updatePoints();
-    //props.getPointsCallback(props.basicComponents.points);
   };
   const removePoints = (points) => {
     for (let point of points) {
@@ -489,7 +542,6 @@ function LayoutSetup(props) {
       );
     }
     updatePoints();
-    //props.getPointsCallback(props.basicComponents.points);
   };
   useEffect(() => {
     if (props.pointsEdit && props.pointsEdit.length > 0) {
@@ -578,14 +630,16 @@ function LayoutSetup(props) {
           borderWidth: 2,
         }}
         onPress={() => {
-          props.reduxAddSaveItem({
+          const currentItem = {
             shapes: props.basicComponents.shapes,
             lines: props.basicComponents.lines,
             points: props.basicComponents.points,
             name: formatDateTime(new Date()),
             fileName: Date.now(),
-            isSynced: false
-          });
+            isSynced: false,
+            url: ""
+          };
+          props.reduxAddSaveItem(currentItem);
           Toast.show({
             type: "success",
             position: "top",

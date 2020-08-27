@@ -1,52 +1,11 @@
 import { combineReducers } from "redux";
-import * as THREE from "three";
-import {createTextGeoFromPosition, drawEdgesFromGeo} from "./components/helper/ShapeHelper";
-
-const convertJSON_to_THREE = (data) => {
-  const loader = new THREE.ObjectLoader();
-  let lines = [];
-  let points = [];
-  let shapes = [];
-  for(let line of data.lines) {
-    lines.push({
-      line: loader.parse(line.line),
-      text: line.text
-    });
-  }
-  for(let point of data.points) {
-    const vertex = point.position;
-    const text = createTextGeoFromPosition(vertex, point.trueText);
-    points.push({
-      text: text,
-      trueText: point.trueText
-    });
-  }
-  for(let shape of data.shapes) {
-    const object = loader.parse(shape.object);
-    const edges = drawEdgesFromGeo(object.geometry);
-    shapes.push({
-      object: object,
-      edges: edges,
-      name: shape.name,
-      color: shape.color,
-      id: shape.id
-    });
-  }
-  return {
-    fileName: data.fileName,
-    name: data.name,
-    lines: lines,
-    shapes: shapes,
-    points: points,
-    isSynced: data.isSynced,
-    showOptions: false
-  };
-};
 const initState = {
   scene: null,
   camera: null,
   cameraHandler: null,
   renderer: null,
+  raycaster: null,
+  intersects: null,
   points: [],
   lines: [],
   shapes: [],
@@ -66,6 +25,14 @@ const basicComponentsReducer = (state = initState, action) => {
   switch (action.type) {
     case "SET_SCENE": {
       state.scene = action.scene;
+      return state;
+    }
+    case "SET_RAYCASTER": {
+      state.raycaster = action.raycaster;
+      return state;
+    }
+    case "SET_INTERSECTS": {
+      state.intersects = action.intersects;
       return state;
     }
     case "SET_CAMERA": {

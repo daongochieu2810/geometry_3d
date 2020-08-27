@@ -45,7 +45,7 @@ const AppBottomNavigator = createBottomTabNavigator(
       screen: HomeScreen,
       navigationOptions: {
         tabBarIcon: ({ tintColor }) => (
-          <Ionicons name="ios-home" size={24} color={tintColor}></Ionicons>
+          <Ionicons name="ios-home" size={24} color={tintColor} />
         ),
       },
     },
@@ -53,7 +53,7 @@ const AppBottomNavigator = createBottomTabNavigator(
       screen: SavedItemScreen,
       navigationOptions: {
         tabBarIcon: ({ tintColor }) => (
-          <Ionicons name="ios-albums" size={24} color={tintColor}></Ionicons>
+          <Ionicons name="ios-albums" size={24} color={tintColor} />
         ),
       },
     },
@@ -61,11 +61,10 @@ const AppBottomNavigator = createBottomTabNavigator(
       screen: AccountScreen,
       navigationOptions: {
         tabBarIcon: ({ tintColor }) => (
-          <Ionicons name="ios-contact" size={24} color={tintColor}></Ionicons>
+          <Ionicons name="ios-contact" size={24} color={tintColor} />
         ),
       },
     },
-    
   },
   {
     headerMode: "none",

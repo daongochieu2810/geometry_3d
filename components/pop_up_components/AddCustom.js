@@ -43,10 +43,8 @@ export default function AddCustom({
     });
   };
   useEffect(() => {
-    if (newCustoms.length > 0) {
       setError(() => null);
       returnShapes(newCustoms);
-    }
   }, [newCustoms]);
 
   return (
@@ -119,7 +117,7 @@ export default function AddCustom({
           >
             <Text>
               {item.item.text +
-                `(x: ${item.item.point.x}, y: ${item.item.point.y},z: ${item.item.point.z})`}
+                `(x: ${Math.round(item.item.point.x * 100) / 100}, y: ${Math.round(item.item.point.y * 100) / 100},z: ${Math.round(item.item.point.z * 100) / 100})`}
             </Text>
           </TouchableOpacity>
         )}
