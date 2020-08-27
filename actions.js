@@ -66,9 +66,9 @@ const setCurrentUser = (data) => ({
   type: "SET_CURRENT_USER",
   user: data
 });
-const setCanRetrieve = (data) => ({
-  type: "SET_CAN_RETRIEVE",
-  canRetrieve: data
+const setDisableCamera = (data) => ({
+  type: "SET_DISABLE_CAMERA",
+  disableCamera: data
 });
 export default {
   setCamera,
@@ -86,7 +86,7 @@ export default {
   removeSaveItem,
   setCurrentUser,
   setSaveItem,
-  setCanRetrieve,
+  setDisableCamera,
   setRaycaster,
   setIntersects
 };

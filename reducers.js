@@ -123,8 +123,8 @@ const currentUserReducer = (state = initCurrentUserState, action) => {
 };
 const miscDataReducer = (state = initMiscData, action) => {
   switch (action.type) {
-    case "SET_CAN_RETRIEVE": {
-      state.canRetrieve = action.canRetrieve;
+    case "SET_DISABLE_CAMERA": {
+      state.disableCamera = action.disableCamera;
       return state;
     }
     default: {

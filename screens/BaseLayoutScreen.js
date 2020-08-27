@@ -355,7 +355,7 @@ export default function BaseLayoutScreen(props) {
           }}
         >
           <Text style={{ textAlign: "center", marginTop: SCREEN_HEIGHT / 100 }}>
-            Settings
+            Tools
           </Text>
           <FlatList
             style={{
