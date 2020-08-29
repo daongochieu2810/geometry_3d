@@ -23,6 +23,7 @@ import {
 import { ConvexBufferGeometry } from "three/examples/jsm/geometries/ConvexGeometry";
 import Toast from "react-native-toast-message";
 import { LongPressGestureHandler, State } from "react-native-gesture-handler";
+import DragControls from '../../components/helper/DragControls';
 
 const LONG_PRESS_MIN_DURATION = 800;
 const mapDispatchToProps = (dispatch) => {
@@ -65,6 +66,9 @@ const mapDispatchToProps = (dispatch) => {
     reduxSetDisableCamera: (isDisabled) => {
       dispatch(actions.setDisableCamera(isDisabled));
     },
+    reduxSetControls: (controls) => {
+      dispatch(actions.setControls(controls));
+    }
   };
 };
 const mapStateToProps = (state) => {
@@ -102,7 +106,7 @@ function LayoutSetup(props) {
   //const [disableCamera, setDisableCamera] = useState(false);
   const [prevX, setPrevX] = useState(null);
   const [prevY, setPrevY] = useState(null);
-
+  //const [controls, setControls] = useState(null);
   const _transformEvent = (event) => {
     event.preventDefault = event.preventDefault || (() => {});
     event.stopPropagation = event.stopPropagation || (() => {});
@@ -131,15 +135,6 @@ function LayoutSetup(props) {
   // We were granted responder status! Let's update the UI
   const handlePanResponderGrant = (e, gestureState) => {
     const event = _transformEvent({ ...e, gestureState });
-
-    /*setLongPressTimeout(() =>
-      setTimeout(function () {
-        console.log("long_press");
-        Vibration.vibrate();
-        props.reduxSetDisableCamera(!props.miscData.disableCamera);
-        //setDisableCamera(() => !disableCamera);
-      }, LONG_PRESS_MIN_DURATION)
-    );*/
     const disableCamera = props.miscData.disableCamera;
     if (disableCamera) {
       pan.setOffset({
@@ -149,6 +144,7 @@ function LayoutSetup(props) {
       pan.setValue({ x: -10, y: -10 });
       mouse.x = (event.nativeEvent.pageX / width) * 2 - 1;
       mouse.y = -(event.nativeEvent.pageY / height) * 2 + 1;
+      props.basicComponents.controls.onDocumentTouchStart(mouse);
     }
     if (!disableCamera)
       props.basicComponents.cameraHandler.handlePanResponderGrant(
@@ -162,21 +158,11 @@ function LayoutSetup(props) {
   const handlePanResponderMove = (e, gestureState) => {
     // Keep track of how far we've moved in total (dx and dy)
     const event = _transformEvent({ ...e, gestureState });
-    //console.log(distance(prevX, prevY, event.nativeEvent.pageX, event.nativeEvent.pageY));
-    /*if (
-      !prevX ||
-      !prevY ||
-      distance(prevX, prevY, event.nativeEvent.pageX, event.nativeEvent.pageY) >
-        1
-    )
-      clearTimeout(longPressTimeout);
-    setPrevX(() => event.nativeEvent.pageX);
-    setPrevY(() => event.nativeEvent.pageY);
-    */
     const disableCamera = props.miscData.disableCamera;
     if (disableCamera) {
       mouse.x = (event.nativeEvent.pageX / width) * 2 - 1;
       mouse.y = -(event.nativeEvent.pageY / height) * 2 + 1;
+      props.basicComponents.controls.onDocumentMouseMove(mouse);
     }
     if (!disableCamera)
       props.basicComponents.cameraHandler.handlePanResponderMove(
@@ -193,6 +179,7 @@ function LayoutSetup(props) {
     if (disableCamera) {
       mouse.x = -10;
       mouse.y = -10;
+      props.basicComponents.controls.onDocumentMouseCancel();
     }
     if (!disableCamera)
       props.basicComponents.cameraHandler.handlePanResponderEnd(
@@ -261,11 +248,13 @@ function LayoutSetup(props) {
     props.reduxSetPoint([]);
     props.reduxSetLine([]);
     props.reduxSetShape([]);
+    props.reduxSetDisableCamera(false);
 
     let renderer = new ExpoTHREE.Renderer({ gl });
     renderer.setPixelRatio(scale);
     renderer.setSize(width, height);
     renderer.setClearColor(0x000000, 1.0);
+    //console.log(renderer.domElement)
 
     const raycaster = new THREE.Raycaster();
     let intersects = null;
@@ -366,7 +355,7 @@ function LayoutSetup(props) {
       scene: scene,
       renderer: renderer,
       raycaster: raycaster,
-      intersects: intersects,
+      intersects: intersects
     });
     if (geometry) {
       let mesh = new THREE.Mesh(geometry, material);
@@ -375,6 +364,8 @@ function LayoutSetup(props) {
         edges,
         new THREE.LineBasicMaterial({ color: 0xffffff })
       );
+      //let wrapper = new THREE.Object3D();
+      //wrapper.add(mesh, line);
       scene.add(mesh, line);
 
       props.reduxSetShape([
@@ -386,14 +377,19 @@ function LayoutSetup(props) {
           id: 0,
         },
       ]);
+      //var controls = new DragControls(mesh, camera, renderer.domElement);
+      props.reduxSetControls(new DragControls([mesh,line], camera));
       props.getShapesCallback(props.basicComponents.shapes);
       loadFont(getVerticesWithText(mesh, props.initShape));
     }
+
   };
+
   let INTERSECTED = null;
+  
   const onRender = (delta) => {
     props.basicComponents.cameraHandler.render(props.basicComponents.points);
-    //console.log(disableCamera)
+  
     const disableCamera = props.miscData.disableCamera;
     if (disableCamera) {
       props.basicComponents.raycaster.setFromCamera(
@@ -406,7 +402,7 @@ function LayoutSetup(props) {
       );
       const intersects = props.basicComponents.intersects;
       if (intersects.length > 0) {
-        // if the closest object intersected is not the currently stored intersection object
+          // if the closest object intersected is not the currently stored intersection object
         if (intersects[0].object !== INTERSECTED) {
           // restore previous intersection object (if it exists) to its original color
           if (INTERSECTED)

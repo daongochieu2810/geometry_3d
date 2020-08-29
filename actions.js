@@ -18,6 +18,10 @@ const setIntersects = (data) => ({
   type: "SET_INTERSECTS",
   intersects: data,
 });
+const setControls = (data) => ({
+  type: "SET_CONTROLS",
+  controls: data
+})
 const setRenderer = (data) => ({
   type: "SET_RENDERER",
   renderer: data,
@@ -88,5 +92,6 @@ export default {
   setSaveItem,
   setDisableCamera,
   setRaycaster,
-  setIntersects
+  setIntersects,
+  setControls
 };

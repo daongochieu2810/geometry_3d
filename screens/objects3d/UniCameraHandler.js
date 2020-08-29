@@ -53,7 +53,6 @@ export default class UniCameraHandler {
       }
       this.prevDist = actualDist;
     } else {
-      //console.log(this.distanceTarget)
       this.target.x =
         this.targetOnDown.x +
         (this.mouse.x - this.mouseOnDown.x) / 100 ;

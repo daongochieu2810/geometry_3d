@@ -6,6 +6,7 @@ const initState = {
   renderer: null,
   raycaster: null,
   intersects: null,
+  controls: null,
   points: [],
   lines: [],
   shapes: [],
@@ -33,6 +34,10 @@ const basicComponentsReducer = (state = initState, action) => {
     }
     case "SET_INTERSECTS": {
       state.intersects = action.intersects;
+      return state;
+    }
+    case "SET_CONTROLS": {
+      state.controls = action.controls;
       return state;
     }
     case "SET_CAMERA": {
