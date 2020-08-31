@@ -17,15 +17,22 @@ import { connect } from "react-redux";
 import actions from "../../actions";
 import {
   getVerticesWithText,
-  createTextGeoFromPosition,
-  drawEdgesFromGeo,
+  addShapes,
+  removeShapes,
+  loadSavedState,
 } from "../../components/helper/ShapeHelper";
+import {
+  addPoints,
+  removePoints,
+  connectPoints,
+  disconnectPoints,
+} from "../../components/helper/PointHelper";
 import { ConvexBufferGeometry } from "three/examples/jsm/geometries/ConvexGeometry";
 import Toast from "react-native-toast-message";
-import { LongPressGestureHandler, State } from "react-native-gesture-handler";
-import DragControls from '../../components/helper/DragControls';
+import DragControls from "../../components/helper/DragControls";
+import { formatDateTime } from "../../components/helper/DatabaseHelper";
+import Shape from "./Shape";
 
-const LONG_PRESS_MIN_DURATION = 800;
 const mapDispatchToProps = (dispatch) => {
   return {
     reduxSetBasicComponents: (components) => {
@@ -33,8 +40,6 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(actions.setCameraHandler(components.cameraHandler));
       dispatch(actions.setRenderer(components.renderer));
       dispatch(actions.setScene(components.scene));
-      dispatch(actions.setIntersects(components.intersects));
-      dispatch(actions.setRaycaster(components.raycaster));
     },
     reduxSetPoint: (points) => {
       dispatch(actions.setPoints(points));
@@ -68,7 +73,7 @@ const mapDispatchToProps = (dispatch) => {
     },
     reduxSetControls: (controls) => {
       dispatch(actions.setControls(controls));
-    }
+    },
   };
 };
 const mapStateToProps = (state) => {
@@ -78,21 +83,6 @@ const mapStateToProps = (state) => {
     miscData: state.miscData,
   };
 };
-const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const { height, width } = Dimensions.get("window");
 
 export default connect(mapStateToProps, mapDispatchToProps)(LayoutSetup);
@@ -102,31 +92,13 @@ function LayoutSetup(props) {
   const [pan, setPan] = useState(new Animated.ValueXY());
   const [mouse, setMouse] = useState(new THREE.Vector2(-10, -10));
   const [val, setVal] = useState({ x: 0, y: 0 });
-  const [longPressTimeout, setLongPressTimeout] = useState(null);
-  //const [disableCamera, setDisableCamera] = useState(false);
-  const [prevX, setPrevX] = useState(null);
-  const [prevY, setPrevY] = useState(null);
-  //const [controls, setControls] = useState(null);
+  const [isLock, setIsLock] = useState(false);
   const _transformEvent = (event) => {
     event.preventDefault = event.preventDefault || (() => {});
     event.stopPropagation = event.stopPropagation || (() => {});
     return event;
   };
 
-  const formatDateTime = (dateObject) => {
-    const year = dateObject.getFullYear();
-    const date = dateObject.getDate();
-    const monthIndex = dateObject.getMonth();
-    const monthName = months[monthIndex];
-    const dayIndex = dateObject.getDay();
-    const dayName = days[dayIndex];
-    const hours = dateObject.getHours();
-    const minutes = dateObject.getMinutes();
-    const seconds = dateObject.getSeconds();
-    return `${hours}:${
-      minutes < 10 ? "0" + minutes.toString() : minutes.toString()
-    }:${seconds}, ${dayName}, ${date} ${monthName} ${year}`;
-  };
   //Should we become active when the user presses down on the square?
   const handleStartShouldSetPanResponder = () => {
     return true;
@@ -144,16 +116,14 @@ function LayoutSetup(props) {
       pan.setValue({ x: -10, y: -10 });
       mouse.x = (event.nativeEvent.pageX / width) * 2 - 1;
       mouse.y = -(event.nativeEvent.pageY / height) * 2 + 1;
-      props.basicComponents.controls.onDocumentTouchStart(mouse);
+      //props.basicComponents.controls.onDocumentTouchStart(mouse);
     }
     if (!disableCamera)
       props.basicComponents.cameraHandler.handlePanResponderGrant(
         event.nativeEvent
       );
   };
-  const distance = (x, y, x1, y1) => {
-    return Math.sqrt((x1 - x) * (x1 - x) + (y1 - y) * (y1 - y));
-  };
+
   // Every time the touch/mouse moves
   const handlePanResponderMove = (e, gestureState) => {
     // Keep track of how far we've moved in total (dx and dy)
@@ -162,7 +132,7 @@ function LayoutSetup(props) {
     if (disableCamera) {
       mouse.x = (event.nativeEvent.pageX / width) * 2 - 1;
       mouse.y = -(event.nativeEvent.pageY / height) * 2 + 1;
-      props.basicComponents.controls.onDocumentMouseMove(mouse);
+      //props.basicComponents.controls.onDocumentMouseMove(mouse);
     }
     if (!disableCamera)
       props.basicComponents.cameraHandler.handlePanResponderMove(
@@ -179,7 +149,7 @@ function LayoutSetup(props) {
     if (disableCamera) {
       mouse.x = -10;
       mouse.y = -10;
-      props.basicComponents.controls.onDocumentMouseCancel();
+      //props.basicComponents.controls.onDocumentMouseCancel();
     }
     if (!disableCamera)
       props.basicComponents.cameraHandler.handlePanResponderEnd(
@@ -219,6 +189,7 @@ function LayoutSetup(props) {
         size: 0.5,
         height: 0.01,
       });
+
       let textMaterial = new THREE.MeshBasicMaterial({
         color: 0xffffff,
       });
@@ -240,15 +211,14 @@ function LayoutSetup(props) {
     updatePoints();
   };
 
-  const over = () => {};
-  const out = () => {};
-
   const onContextCreate = ({ gl, width, height, scale }) => {
     if (props.basicComponents.scene) props.basicComponents.scene.dispose();
+
     props.reduxSetPoint([]);
     props.reduxSetLine([]);
     props.reduxSetShape([]);
     props.reduxSetDisableCamera(false);
+    props.reduxSetControls(null);
 
     let renderer = new ExpoTHREE.Renderer({ gl });
     renderer.setPixelRatio(scale);
@@ -256,13 +226,10 @@ function LayoutSetup(props) {
     renderer.setClearColor(0x000000, 1.0);
     //console.log(renderer.domElement)
 
-    const raycaster = new THREE.Raycaster();
-    let intersects = null;
-
     let scene = new THREE.Scene();
     let camera = new THREE.PerspectiveCamera(100, width / height, 0.1, 1000);
 
-    //grid size = 2pixI
+    //grid size = 2pixel
     let geometry = null;
     switch (props.initShape) {
       case "cube": {
@@ -291,48 +258,7 @@ function LayoutSetup(props) {
       }
       default: {
         if (props.savedState) {
-          const data = props.savedState;
-          data.lines = JSON.parse(data.lines);
-          data.shapes = JSON.parse(data.shapes);
-          data.points = JSON.parse(data.points);
-          const loader = new THREE.ObjectLoader();
-          for (let line of data.lines) {
-            scene.add(loader.parse(line.line));
-          }
-          let points = [];
-          for (let point of data.points) {
-            const vertex = point.position;
-            const text = createTextGeoFromPosition(vertex, point.trueText);
-            points.push({
-              text: text,
-              position: vertex,
-              trueText: point.trueText,
-            });
-            scene.add(text);
-          }
-          props.reduxSetPoint([...points]);
-          updatePoints();
-          let shapesHolder = [];
-          for (let shape of data.shapes) {
-            const object = loader.parse(shape.object);
-            const edges = drawEdgesFromGeo(
-              object.geometry,
-              shape.rotation,
-              shape.position
-            );
-            scene.add(object, edges);
-            shapesHolder.push({
-              object: object,
-              color: shape.color,
-              edges: edges,
-              name: shape.name,
-              id: shape.id,
-              rotation: shape.rotation,
-              position: shape.position,
-            });
-          }
-          props.reduxSetShape(shapesHolder);
-          props.getShapesCallback(props.basicComponents.shapes);
+          loadSavedState(props, scene, updatePoints);
         }
         break;
       }
@@ -354,9 +280,8 @@ function LayoutSetup(props) {
       cameraHandler: cameraHandler,
       scene: scene,
       renderer: renderer,
-      raycaster: raycaster,
-      intersects: intersects
     });
+    
     if (geometry) {
       let mesh = new THREE.Mesh(geometry, material);
       let edges = new THREE.EdgesGeometry(geometry);
@@ -371,242 +296,34 @@ function LayoutSetup(props) {
       props.reduxSetShape([
         {
           object: mesh,
-          color: "#e7ff37",
           edges: line,
+          color: "#e7ff37",
           name: "default",
           id: 0,
         },
       ]);
-      //var controls = new DragControls(mesh, camera, renderer.domElement);
-      props.reduxSetControls(new DragControls([mesh,line], camera));
       props.getShapesCallback(props.basicComponents.shapes);
       loadFont(getVerticesWithText(mesh, props.initShape));
     }
-
   };
 
-  let INTERSECTED = null;
-  
   const onRender = (delta) => {
     props.basicComponents.cameraHandler.render(props.basicComponents.points);
-  
-    const disableCamera = props.miscData.disableCamera;
-    if (disableCamera) {
-      props.basicComponents.raycaster.setFromCamera(
-        mouse,
-        props.basicComponents.camera
-      );
-      props.basicComponents.intersects = props.basicComponents.raycaster.intersectObjects(
-        props.basicComponents.shapes.map((item) => item.object),
-        false
-      );
-      const intersects = props.basicComponents.intersects;
-      if (intersects.length > 0) {
-          // if the closest object intersected is not the currently stored intersection object
-        if (intersects[0].object !== INTERSECTED) {
-          // restore previous intersection object (if it exists) to its original color
-          if (INTERSECTED)
-            INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-          // store reference to closest object as current intersection object
-          INTERSECTED = intersects[0].object;
-          // store color of closest object (for later restoration)
-          INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-          // set a new color for closest object
-          INTERSECTED.material.color.setHex(0xffffff);
-        }
-      } // there are no intersections
-      else {
-        // restore previous intersection object (if it exists) to its original color
-        if (INTERSECTED)
-          INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-        // remove previous intersection object reference
-        //     by setting current intersection object to "nothing"
-        INTERSECTED = null;
-      }
-    } else {
-      if (INTERSECTED)
-            INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-    }
     props.basicComponents.renderer.render(
       props.basicComponents.scene,
       props.basicComponents.camera
     );
   };
 
-  const addBasicShapes = (
-    type,
-    position,
-    sizes,
-    rotation = null,
-    color = null,
-    points = null,
-    name
-  ) => {
-    let geometry = null;
-    let material = null;
-    switch (type) {
-      case "box": {
-        geometry = new THREE.BoxBufferGeometry(
-          sizes.width,
-          sizes.height,
-          sizes.depth
-        );
-        material = new THREE.MeshBasicMaterial({
-          color: color ? new THREE.Color(color) : 0xe7ff37,
-          opacity: 0.5,
-          transparent: true,
-          side: THREE.DoubleSide,
-        });
-        break;
-      }
-      case "custom": {
-        geometry = new ConvexBufferGeometry(points);
-        material = new THREE.MeshBasicMaterial({
-          color: color ? new THREE.Color(color) : 0xe7ff37,
-          opacity: 0.5,
-          transparent: true,
-          side: THREE.DoubleSide,
-        });
-        break;
-      }
-      case "sphere": {
-        geometry = new THREE.SphereBufferGeometry(
-          sizes.radius,
-          sizes.radius * 5,
-          sizes.radius * 5
-        );
-        material = new THREE.MeshBasicMaterial({
-          color: color ? new THREE.Color(color) : 0xe7ff37,
-          opacity: 0.5,
-          transparent: true,
-        });
-        break;
-      }
-      case "cone": {
-        geometry = new THREE.ConeBufferGeometry(
-          sizes.radius,
-          sizes.height,
-          sizes.radius * 7
-        );
-        material = new THREE.MeshBasicMaterial({
-          color: color ? new THREE.Color(color) : 0xe7ff37,
-          opacity: 0.5,
-          transparent: true,
-        });
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-
-    let mesh = new THREE.Mesh(geometry, material);
-    let edges = new THREE.EdgesGeometry(geometry);
-    let line = new THREE.LineSegments(
-      edges,
-      new THREE.LineBasicMaterial({ color: 0xffffff })
-    );
-    if (position) {
-      mesh.position.set(position.x, position.y, position.z);
-      line.position.set(position.x, position.y, position.z);
-    }
-    if (rotation) {
-      mesh.rotation.set(rotation.x, rotation.y, rotation.z);
-      line.rotation.set(rotation.x, rotation.y, rotation.z);
-    }
-    props.basicComponents.scene.add(mesh, line);
-    props.reduxAddShape({
-      object: mesh,
-      edges: line,
-      color: color,
-      name: name,
-      id: props.basicComponents.shapes.length,
-      rotation: rotation,
-      position: position,
-    });
-    props.getShapesCallback(props.basicComponents.shapes);
-  };
-
-  const connectPoints = (points) => {
-    const newPoints = [];
-    const actualPoints = points.map((item) => {
-      if (item.isNew) {
-        newPoints.push(item.item);
-      }
-      return item.item.point;
-    });
-    let lineName = "";
-    for (let index = 0; index < points.length; index++) {
-      let item = points[index];
-      lineName += item.item.text;
-      if (index !== points.length - 1) lineName += "-";
-    }
-    loadFont(newPoints);
-    let geometry = new THREE.BufferGeometry().setFromPoints(actualPoints);
-    let material = new THREE.LineBasicMaterial({ color: 0xffffff });
-    let newLine = new THREE.Line(geometry, material);
-    props.basicComponents.scene.add(newLine);
-    props.reduxAddLine({ line: newLine, text: lineName });
-    props.getLinesCallback(props.basicComponents.lines);
-  };
-
-  const disconnectPoints = (lines) => {
-    for (let line of lines) {
-      let realLine = line.item.line;
-      props.basicComponents.scene.remove(realLine);
-      props.reduxRemoveLine(line.item);
-      props.getLinesCallback(props.basicComponents.lines);
-    }
-  };
-
-  const addShapes = (shapes) => {
-    for (let shape of shapes) {
-      if (shape.item.type) {
-        addBasicShapes(
-          shape.item.type,
-          shape.item.position,
-          shape.item.sizes,
-          shape.item.rotation,
-          shape.item.color,
-          shape.item.points,
-          shape.item.name
-        );
-      }
-    }
-  };
-
-  const removeShapes = (shapes) => {
-    for (let shape of shapes) {
-      props.basicComponents.scene.remove(shape.object, shape.edges);
-      props.reduxRemoveShape(shape);
-    }
-    props.getShapesCallback(props.basicComponents.shapes);
-  };
-  const addPoints = (points) => {
-    let holder = [];
-    for (let point of points) {
-      holder.push(point.item);
-    }
-    loadFont(holder);
-  };
-  const removePoints = (points) => {
-    for (let point of points) {
-      props.basicComponents.scene.remove(point.item.item.text);
-      props.reduxSetPoint(
-        props.basicComponents.points.filter((item) => item !== point.item.item)
-      );
-    }
-    updatePoints();
-  };
   useEffect(() => {
     if (props.pointsEdit && props.pointsEdit.length > 0) {
       switch (props.action) {
         case "add_points": {
-          addPoints(props.pointsEdit);
+          addPoints(loadFont, props.pointsEdit);
           break;
         }
         case "remove_points": {
-          removePoints(props.pointsEdit);
+          removePoints(props, updatePoints, props.pointsEdit);
           break;
         }
         default: {
@@ -619,11 +336,11 @@ function LayoutSetup(props) {
     if (props.pointsConnect && props.pointsConnect.length > 0) {
       switch (props.action) {
         case "connect_points": {
-          connectPoints(props.pointsConnect);
+          connectPoints(props, loadFont, props.pointsConnect);
           break;
         }
         case "disconnect_points": {
-          disconnectPoints(props.pointsConnect);
+          disconnectPoints(props, props.pointsConnect);
           break;
         }
         default: {
@@ -637,11 +354,11 @@ function LayoutSetup(props) {
     if (props.shapesConnect && props.shapesConnect.length > 0) {
       switch (props.action) {
         case "add_shapes": {
-          addShapes(props.shapesConnect);
+          addShapes(props, props.shapesConnect);
           break;
         }
         case "remove_shapes": {
-          removeShapes(props.shapesConnect);
+          removeShapes(props, props.shapesConnect);
           break;
         }
         default: {
@@ -653,36 +370,50 @@ function LayoutSetup(props) {
 
   return (
     <>
-      <LongPressGestureHandler
-        onHandlerStateChange={({ nativeEvent }) => {
-          if (nativeEvent.state === State.ACTIVE) {
-            Vibration.vibrate();
-            props.reduxSetDisableCamera(!props.miscData.disableCamera);
-            //Alert.alert("I'm being pressed for so long");
-          }
+      <View
+        {...panResponder.panHandlers}
+        style={{
+          flex: 1,
+          overflow: "hidden",
+          width: "100%",
+          height: "100%",
         }}
-        minDurationMs={800}
       >
-        <View
-          {...panResponder.panHandlers}
+        <ExpoGraphics.View
+          style={{ flex: 1 }}
+          onContextCreate={(props) => {
+            onContextCreate(props);
+          }}
+          onRender={(_props) => onRender(_props)}
+          arEnabled={false}
+          onShouldReloadContext={() => true}
+        />
+      </View>
+      <TouchableOpacity
+        style={{
+          backgroundColor: "black",
+          top: 32,
+          right: 90,
+          position: "absolute",
+          paddingVertical: 5,
+          paddingHorizontal: 10,
+          borderRadius: 5,
+          borderColor: "red",
+          borderWidth: 2,
+        }}
+        onPress={() => {
+          props.reduxSetDisableCamera(!props.miscData.disableCamera);
+          setIsLock(() => !isLock);
+        }}
+      >
+        <Text
           style={{
-            flex: 1,
-            overflow: "hidden",
-            width: "100%",
-            height: "100%",
+            color: "red",
           }}
         >
-          <ExpoGraphics.View
-            style={{ flex: 1 }}
-            onContextCreate={(props) => {
-              onContextCreate(props);
-            }}
-            onRender={(_props) => onRender(_props)}
-            arEnabled={false}
-            onShouldReloadContext={() => true}
-          />
-        </View>
-      </LongPressGestureHandler>
+          {isLock ? "Unlock" : "Lock"}
+        </Text>
+      </TouchableOpacity>
       <TouchableOpacity
         style={{
           backgroundColor: "black",

@@ -4,8 +4,6 @@ const initState = {
   camera: null,
   cameraHandler: null,
   renderer: null,
-  raycaster: null,
-  intersects: null,
   controls: null,
   points: [],
   lines: [],
@@ -19,21 +17,14 @@ const initCurrentUserState = {
   user: {}
 };
 const initMiscData = {
-  canRetrieve: true
+  canRetrieve: true,
+  disableCamera: false
 };
 
 const basicComponentsReducer = (state = initState, action) => {
   switch (action.type) {
     case "SET_SCENE": {
       state.scene = action.scene;
-      return state;
-    }
-    case "SET_RAYCASTER": {
-      state.raycaster = action.raycaster;
-      return state;
-    }
-    case "SET_INTERSECTS": {
-      state.intersects = action.intersects;
       return state;
     }
     case "SET_CONTROLS": {

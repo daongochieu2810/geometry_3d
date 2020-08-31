@@ -10,14 +10,6 @@ const setScene = (data) => ({
   type: "SET_SCENE",
   scene: data,
 });
-const setRaycaster = (data) => ({
-  type: "SET_RAYCASTER",
-  raycaster: data,
-});
-const setIntersects = (data) => ({
-  type: "SET_INTERSECTS",
-  intersects: data,
-});
 const setControls = (data) => ({
   type: "SET_CONTROLS",
   controls: data
@@ -91,7 +83,5 @@ export default {
   setCurrentUser,
   setSaveItem,
   setDisableCamera,
-  setRaycaster,
-  setIntersects,
   setControls
 };

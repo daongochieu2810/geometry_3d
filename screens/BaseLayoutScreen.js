@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-    BackHandler
+  BackHandler,
 } from "react-native";
 
 import { useNavigation } from "react-navigation-hooks";
@@ -22,25 +22,19 @@ import Dialog, {
 } from "react-native-popup-dialog";
 import ControlPoints from "../components/pop_up_components/ControlPoints";
 import ControlShapes from "../components/pop_up_components/ControlShapes";
-import EditPoints from '../components/pop_up_components/EditPoints';
+import EditPoints from "../components/pop_up_components/EditPoints";
+import Settings from "../components/pop_up_components/Settings";
 import Toast from "react-native-toast-message";
-//import { connect } from "react-redux";
 
 const SCREEN_WIDTH = Dimensions.get("screen").width;
 const SCREEN_HEIGHT = Dimensions.get("screen").height;
 
-/*const mapStateToProps = (state) => {
-  return {
-    basicComponents: state.basicComponents,
-  };
-};*/
-//export default connect(mapStateToProps, null)(CubeScreen);
 
 export default function BaseLayoutScreen(props) {
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', () => true);
+    BackHandler.addEventListener("hardwareBackPress", () => true);
     return () =>
-        BackHandler.removeEventListener('hardwareBackPress', () => true);
+      BackHandler.removeEventListener("hardwareBackPress", () => true);
   }, []);
   const initShape = props.initShape;
   const params = props.params;
@@ -53,7 +47,7 @@ export default function BaseLayoutScreen(props) {
       shapes: params.shapes,
       lines: params.lines,
       points: params.points,
-      fileName: params.fileName
+      fileName: params.fileName,
     };
     savedState = currSavedState;
     //setSavedState(() => currSavedState)
@@ -99,23 +93,25 @@ export default function BaseLayoutScreen(props) {
     {
       index: 0,
       name: "Add points",
-      component:
-          <EditPoints
-              isAdd={true}
-              currentPoints={currPoints ? currPoints : []}
-              returnPoints={editPoints}
-          />,
+      component: (
+        <EditPoints
+          isAdd={true}
+          currentPoints={currPoints ? currPoints : []}
+          returnPoints={editPoints}
+        />
+      ),
       action: "add_points",
     },
     {
       index: 1,
       name: "Remove points",
-      component:
-          <EditPoints
-              isAdd={false}
-              currentPoints={currPoints ? currPoints : []}
-              returnPoints={editPoints}
-          />,
+      component: (
+        <EditPoints
+          isAdd={false}
+          currentPoints={currPoints ? currPoints : []}
+          returnPoints={editPoints}
+        />
+      ),
       action: "remove_points",
     },
     {
@@ -168,11 +164,17 @@ export default function BaseLayoutScreen(props) {
       ),
       action: "remove_shapes",
     },
+    {
+      index: 6,
+      name: "Settings",
+      component: (<Settings existingShapes={currShapes}/>),
+      action: "settings",
+    },
   ];
   const onPointsEditPopUpDone = () => {
-    if(pointsEdit.length > 0 ) {
+    if (pointsEdit.length > 0) {
       setSignalEditPoints(() => !signalEditPoints);
-      if(action === "add_points") {
+      if (action === "add_points") {
         Toast.show({
           type: "success",
           position: "top",
@@ -181,7 +183,7 @@ export default function BaseLayoutScreen(props) {
           visibilityTime: 3000,
           autoHide: true,
         });
-      } else if(action === "remove_points") {
+      } else if (action === "remove_points") {
         Toast.show({
           type: "success",
           position: "top",
@@ -310,10 +312,14 @@ export default function BaseLayoutScreen(props) {
               onPress={() => {
                 setVisible(false);
                 if (!isFromShape) {
-                    if ((action === "remove_points" || action === "add_points") && pointsEdit) onPointsEditPopUpDone();
-                    else if (pointsConnect) onPointsPopUpDone();
-                }
-                else {
+                  if (action === "settings") {
+                  } else if (
+                    (action === "remove_points" || action === "add_points") &&
+                    pointsEdit
+                  )
+                    onPointsEditPopUpDone();
+                  else if (pointsConnect) onPointsPopUpDone();
+                } else {
                   if (shapesConnect) onShapesPopUpDone();
                 }
                 setPopUpComp(null);
@@ -381,7 +387,10 @@ export default function BaseLayoutScreen(props) {
                   margin: 5,
                 }}
                 onPress={() => {
-                  if (item.action === "add_shapes" || item.action === "remove_shapes") {
+                  if (
+                    item.action === "add_shapes" ||
+                    item.action === "remove_shapes"
+                  ) {
                     setIsFromShape(() => true);
                   } else {
                     setIsFromShape(() => false);

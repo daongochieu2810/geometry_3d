@@ -21,9 +21,6 @@ const mapDispatchToProps = (dispatch) => {
       },
       reduxAddSaveItem: (item) => {
         dispatch(actions.addSaveItem(item));
-      },
-      reduxSetCanRetrieve: (data) => {
-        dispatch(actions.setCanRetrieve(data));
       }
   };
 };
@@ -270,7 +267,6 @@ function SavedItemScreen(props) {
         }}
                           onPress={() => {
             retrieveSyncedItems();
-            props.reduxSetCanRetrieve(false);
         }}>
             <Text style={{textAlign: 'center', color: 'black'}}>Retrieve synced items</Text>
         </TouchableOpacity>}
