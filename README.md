@@ -12,4 +12,9 @@ Users can save a scene. Signed up users' content will be saved on Firebase Stora
 
 ExpoGL.View was used as the container for three-js objects.
 
+# Demo
 ![demo](./demo.gif)
+
+# Todos
+1. Add more geometry-related features i.e draw perpendicular and parallel line, mark lines' intersections,...
+2. Allow users to draw shapes instead of filling in coordinates
