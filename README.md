@@ -12,4 +12,4 @@ Users can save a scene. Signed up users' content will be saved on Firebase Stora
 
 ExpoGL.View was used as the container for three-js objects.
 
-![demo](https://media.giphy.com/media/KcQYf4e3zpJ0nJzr50/giphy.gif)
+![demo](./demo.gif)
