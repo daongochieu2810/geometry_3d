@@ -11,3 +11,5 @@ Custom shapes: connect input points and fill them to make 3D shapes.
 Users can save a scene. Signed up users' content will be saved on Firebase Storage.
 
 ExpoGL.View was used as the container for three-js objects.
+
+![demo](./demo.gif)
