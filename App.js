@@ -18,6 +18,7 @@ import SphereScreen from "./screens/sphere/SphereScreen";
 import OctahedronScreen from "./screens/octahedron/OctahedronScreen";
 import BaseLayoutScreen from "./screens/BaseLayoutScreen";
 import ConeScreen from "./screens/cone/ConeScreen";
+import SettingScreen from './screens/objects3d/SettingScreen';
 
 import globalStorage from "./store";
 import { Provider } from "react-redux";
@@ -102,6 +103,9 @@ const Object3DNavigator = createStackNavigator(
     PrismScreen: {
       screen: (props) => <PrismScreen initShape={"prism"} {...props} />,
     },
+    SettingScreen: {
+      screen: (props) => <SettingScreen {...props}/>
+    }
   },
   {
     headerMode: "none",

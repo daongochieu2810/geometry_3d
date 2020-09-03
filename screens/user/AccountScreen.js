@@ -21,8 +21,8 @@ const mapStateToProps = (state) => {
        // basicComponents: state.basicComponents
     };
 };
-const SCREEN_WIDTH = Dimensions.get("screen").width;
-const SCREEN_HEIGHT = Dimensions.get("screen").height;
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 export default connect(mapStateToProps, mapDispatchToProps)(AccountScreen);
 function AccountScreen(props) {

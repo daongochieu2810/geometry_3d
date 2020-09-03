@@ -29,7 +29,7 @@ import {
 } from "../../components/helper/PointHelper";
 import { ConvexBufferGeometry } from "three/examples/jsm/geometries/ConvexGeometry";
 import Toast from "react-native-toast-message";
-import DragControls from "../../components/helper/DragControls";
+//import DragControls from "../../components/helper/DragControls";
 import { formatDateTime } from "../../components/helper/DatabaseHelper";
 import Shape from "./Shape";
 
@@ -71,9 +71,9 @@ const mapDispatchToProps = (dispatch) => {
     reduxSetDisableCamera: (isDisabled) => {
       dispatch(actions.setDisableCamera(isDisabled));
     },
-    reduxSetControls: (controls) => {
+    /*reduxSetControls: (controls) => {
       dispatch(actions.setControls(controls));
-    },
+    },*/
   };
 };
 const mapStateToProps = (state) => {
@@ -214,11 +214,11 @@ function LayoutSetup(props) {
   const onContextCreate = ({ gl, width, height, scale }) => {
     if (props.basicComponents.scene) props.basicComponents.scene.dispose();
 
-    props.reduxSetPoint([]);
-    props.reduxSetLine([]);
-    props.reduxSetShape([]);
+    //props.reduxSetPoint([]);
+    //props.reduxSetLine([]);
+    //props.reduxSetShape([]);
     props.reduxSetDisableCamera(false);
-    props.reduxSetControls(null);
+    //props.reduxSetControls(null);
 
     let renderer = new ExpoTHREE.Renderer({ gl });
     renderer.setPixelRatio(scale);

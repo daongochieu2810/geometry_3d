@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   BackHandler,
-    SafeAreaView
+  SafeAreaView,
 } from "react-native";
 
 import { useNavigation } from "react-navigation-hooks";
@@ -27,9 +27,8 @@ import EditPoints from "../components/pop_up_components/EditPoints";
 import Settings from "../components/pop_up_components/Settings";
 import Toast from "react-native-toast-message";
 
-const SCREEN_WIDTH = Dimensions.get("screen").width;
-const SCREEN_HEIGHT = Dimensions.get("screen").height;
-
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 export default function BaseLayoutScreen(props) {
   useEffect(() => {
@@ -171,7 +170,7 @@ export default function BaseLayoutScreen(props) {
     {
       index: 6,
       name: "Settings",
-      component: (<Settings existingShapes={currShapes} camera={camera}/>),
+      component: <Settings existingShapes={currShapes} camera={camera} />,
       action: "settings",
     },
   ];
@@ -318,7 +317,8 @@ export default function BaseLayoutScreen(props) {
                 setVisible(false);
                 if (!isFromShape) {
                   if (action === "settings") {
-
+                    navigate.navigate("SettingScreen");
+                    return;
                   } else if (
                     (action === "remove_points" || action === "add_points") &&
                     pointsEdit
@@ -401,8 +401,12 @@ export default function BaseLayoutScreen(props) {
                   } else {
                     setIsFromShape(() => false);
                   }
+                  if (item.action === "settings") {
+                    navigate.navigate("SettingScreen");
+                    return;
+                  }
                   setVisible(true);
-                  setPointsConnect(() => []);
+                  setPointsConnect(() => []); 
                   setAction(() => item.action);
                   setPopUpComp(item.component);
                 }}
