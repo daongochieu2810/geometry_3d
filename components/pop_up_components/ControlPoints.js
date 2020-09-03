@@ -17,7 +17,7 @@ export default function ControlPoints({
   returnPoints,
   connect,
 }) {
-  var _pointInput = currentPoints.map((item, index) => ({
+  let _pointInput = currentPoints.map((item, index) => ({
     item: item,
     id: index,
     chosen: false,

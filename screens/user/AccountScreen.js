@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react";
-import {Text, View, StyleSheet, TouchableOpacity, LayoutAnimation, Dimensions} from "react-native";
+import {Text, View, StyleSheet, TouchableOpacity, LayoutAnimation, Dimensions, SafeAreaView} from "react-native";
 import fb from "../../backend";
 import { useNavigation} from 'react-navigation-hooks'
 import {connect} from 'react-redux';
@@ -29,9 +29,9 @@ function AccountScreen(props) {
     const navigation = useNavigation();
     const [currUser, setCurrUser] = useState(fb.auth.currentUser);
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
         {currUser ?
-            <><View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 25 }}>
+            <><View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 30 }}>
         <Text style={{ fontSize: 20 }}>Personal account</Text>
         <TouchableOpacity
           style={{
@@ -62,7 +62,7 @@ function AccountScreen(props) {
                     <Text style={{color: "white"}}>Log in</Text>
                 </TouchableOpacity>
             </View> }
-    </View>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({

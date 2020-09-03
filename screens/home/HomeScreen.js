@@ -1,5 +1,5 @@
 import React, { useRef, useContext } from "react";
-import { Animated, Dimensions, FlatList, View, Text } from "react-native";
+import { Animated, Dimensions, FlatList, View, Text , SafeAreaView} from "react-native";
 import AnimatedCard from "../../components/common/AnimatedCard";
 import CardContext from "../../components/contexts/CardContext";
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -109,7 +109,7 @@ export const AnimatedObjectList = ({
 };
 const HomeScreen = () => {
   return (
-    <>
+    <SafeAreaView style={{marginTop: 20}}>
       <AnimatedObjectList
         data={cards}
         cardW={CARD_WIDTH}
@@ -117,7 +117,7 @@ const HomeScreen = () => {
         isHorizontal={false}
         _eventEmitter={null}
       />
-    </>
+    </SafeAreaView>
   );
 };
 export default HomeScreen;

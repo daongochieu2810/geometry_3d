@@ -8,6 +8,7 @@ export default class UniCameraHandler {
     this.distanceTarget = 10;
     this.prevDist = 0;
     this.camera.position.z = this.distance;
+    this.currentCenter = {x: 0,y: 0,z: 0};
 
     this.mouse = { x: 0, y: 0 };
     this.touch = { x: 0, y: 0 };
@@ -71,6 +72,10 @@ export default class UniCameraHandler {
     this.mousedown = false;
   };
 
+  setCenter = (center) => {
+    this.currentCenter = center;
+  };
+
   zoom = (delta) => {
     const zoomMin = 2;
     const zoomMax = 200;
@@ -94,7 +99,7 @@ export default class UniCameraHandler {
     this.camera.position.z =
       this.distance * Math.cos(this.rotation.x) * Math.cos(this.rotation.y);
 
-    this.camera.lookAt(0,0,0);
+    this.camera.lookAt(this.currentCenter.x, this.currentCenter.y, this.currentCenter.z);
     for (let index in listOfObject) {
       let verticeObject = listOfObject[index];
       const text = verticeObject.text;

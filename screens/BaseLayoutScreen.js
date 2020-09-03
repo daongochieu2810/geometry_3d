@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   BackHandler,
+    SafeAreaView
 } from "react-native";
 
 import { useNavigation } from "react-navigation-hooks";
@@ -39,9 +40,7 @@ export default function BaseLayoutScreen(props) {
   const initShape = props.initShape;
   const params = props.params;
   THREE.suppressExpoWarnings(true);
-  //const [savedState, setSavedState] = useState(null)
   let savedState = null;
-  //console.log(props)
   if (params) {
     let currSavedState = {
       shapes: params.shapes,
@@ -50,7 +49,6 @@ export default function BaseLayoutScreen(props) {
       fileName: params.fileName,
     };
     savedState = currSavedState;
-    //setSavedState(() => currSavedState)
   }
   const [currPoints, setCurrPoints] = useState(null);
   const [currLines, setCurrLines] = useState(null);
@@ -67,7 +65,13 @@ export default function BaseLayoutScreen(props) {
   const [shapesConnect, setShapesConnect] = useState([]);
   const [isFromShape, setIsFromShape] = useState(false);
   const [pointsEdit, setPointsEdit] = useState(null);
+
+  const [camera, setCamera] = useState(null);
+
   const navigate = useNavigation();
+  const getCam = (cam) => {
+    setCamera(() => cam);
+  };
   const getPoints = (listOfPoints) => {
     setCurrPoints(() => listOfPoints);
   };
@@ -167,7 +171,7 @@ export default function BaseLayoutScreen(props) {
     {
       index: 6,
       name: "Settings",
-      component: (<Settings existingShapes={currShapes}/>),
+      component: (<Settings existingShapes={currShapes} camera={camera}/>),
       action: "settings",
     },
   ];
@@ -264,7 +268,7 @@ export default function BaseLayoutScreen(props) {
   };
 
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         backgroundColor: "black",
@@ -274,6 +278,7 @@ export default function BaseLayoutScreen(props) {
         getPointsCallback={getPoints}
         getLinesCallback={getLines}
         getShapesCallback={getShapes}
+        getCam={getCam}
         pointsConnect={pointsConnect}
         shapesConnect={shapesConnect}
         pointsEdit={pointsEdit}
@@ -313,6 +318,7 @@ export default function BaseLayoutScreen(props) {
                 setVisible(false);
                 if (!isFromShape) {
                   if (action === "settings") {
+
                   } else if (
                     (action === "remove_points" || action === "add_points") &&
                     pointsEdit
@@ -413,7 +419,7 @@ export default function BaseLayoutScreen(props) {
           />
         </View>
       </BottomDrawer>
-    </View>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({

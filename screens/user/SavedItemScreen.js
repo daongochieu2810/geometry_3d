@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import {Dimensions, View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet} from "react-native";
+import {Dimensions, View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet, SafeAreaView} from "react-native";
 import { connect } from "react-redux";
 import actions from "../../actions";
 import { useNavigation } from "react-navigation-hooks";
@@ -162,7 +162,7 @@ function SavedItemScreen(props) {
 
     };
   return isLoading ? (<View><Spinner visible={true}/></View>) :(
-    <View style={{marginTop: 25, marginHorizontal: 20 }}>
+    <SafeAreaView style={{marginTop: 30, marginHorizontal: 20}}>
       <View
         style={{
           flexDirection: "row",
@@ -366,7 +366,7 @@ function SavedItemScreen(props) {
            }><Text style={{color: 'red', textAlign: 'center'}}>Delete</Text></TouchableOpacity>
            </View> : <Text style={{fontSize: 20, textAlign: 'center', marginVertical: 20}}>Are you sure ?</Text>}
       </Dialog>
-    </View>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({

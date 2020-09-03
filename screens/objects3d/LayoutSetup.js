@@ -228,7 +228,6 @@ function LayoutSetup(props) {
 
     let scene = new THREE.Scene();
     let camera = new THREE.PerspectiveCamera(100, width / height, 0.1, 1000);
-
     //grid size = 2pixel
     let geometry = null;
     switch (props.initShape) {
@@ -272,6 +271,7 @@ function LayoutSetup(props) {
     });
     const axisHelper = new THREE.AxesHelper(200);
     const cameraHandler = new UniCameraHandler(camera);
+    props.getCam(cameraHandler);
     const plane = new THREE.GridHelper(200, 200, "#ff3700");
 
     scene.add(plane, axisHelper);

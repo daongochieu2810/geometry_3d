@@ -11,7 +11,6 @@
     "@react-native-community/async-storage": "^1.11.0",
     "@react-native-community/masked-view": "^0.1.10",
     "@react-native-community/viewpager": "3.3.0",
-    "EventEmitter": "^1.0.0",
     "expo": "~38.0.8",
     "expo-cli": "~3.22.3",
     "expo-gl": "~8.3.1",

@@ -12484,6 +12484,11 @@ react-native-appearance@~0.3.3:
     invariant "^2.2.4"
     use-subscription "^1.0.0"
 
+react-native-drawer-menu@^0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/react-native-drawer-menu/-/react-native-drawer-menu-0.2.5.tgz#098a5ede6456f6066bb608dabe72b5c297e9a704"
+  integrity sha512-cZpq7xGRC/fiJB1du+hR0jN0TX0oy8hF/kxEqOzcC0jzSNOtKlZuja4MW2aJPzg/LlflNy1L3KUpDYyWUdl1IA==
+
 react-native-elements@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/react-native-elements/-/react-native-elements-2.2.0.tgz#18e1269d31530fbbd079e5cc285b83b2bbf27676"
