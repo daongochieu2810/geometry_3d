@@ -6,7 +6,8 @@ import {
   SafeAreaView,
   FlatList,
   Dimensions,
-  TouchableOpacity,
+  Modal,
+  TouchableOpacity
 } from "react-native";
 import { connect } from "react-redux";
 import { Ionicons } from '@expo/vector-icons';
@@ -28,15 +29,7 @@ function SettingScreen(props) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={{flexDirection: 'row'}}>
-      <TouchableOpacity
-        style={styles.back}
-        onPress={() =>
-          navigation.goBack()
-        }
-      >
-        <Ionicons name="ios-arrow-round-back" color="black" size={42} />
-      </TouchableOpacity>
-        <Text style={{ fontSize: 20, textAlignVertical: 'center', marginLeft: 10 }}>Settings</Text>
+        <Text style={{ fontSize: 20, textAlignVertical: 'center' }}>Settings</Text>
       </View>
       <View style={styles.section}>
         <Text style={{fontSize: 18}}>All shapes</Text>
@@ -49,7 +42,7 @@ function SettingScreen(props) {
           }}
           data={props.basicComponents.shapes}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.touchableItem}>
+            <TouchableOpacity style={{...styles.touchableItem, backgroundColor: item.color}}>
               <Text>Shape</Text>
             </TouchableOpacity>
           )}
@@ -61,7 +54,6 @@ function SettingScreen(props) {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
-    paddingVertical: 30,
     flex: 1,
   },
   section: {
@@ -74,6 +66,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     borderWidth: StyleSheet.hairlineWidth,
+    marginRight: 10
   },
   back: {
     width: 42,

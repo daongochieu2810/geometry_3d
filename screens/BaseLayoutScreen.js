@@ -8,6 +8,7 @@ import {
   FlatList,
   BackHandler,
   SafeAreaView,
+  Modal,
 } from "react-native";
 
 import { useNavigation } from "react-navigation-hooks";
@@ -26,6 +27,7 @@ import ControlShapes from "../components/pop_up_components/ControlShapes";
 import EditPoints from "../components/pop_up_components/EditPoints";
 import Settings from "../components/pop_up_components/Settings";
 import Toast from "react-native-toast-message";
+import SettingModal from "./objects3d/SettingModal";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -64,6 +66,8 @@ export default function BaseLayoutScreen(props) {
   const [shapesConnect, setShapesConnect] = useState([]);
   const [isFromShape, setIsFromShape] = useState(false);
   const [pointsEdit, setPointsEdit] = useState(null);
+
+  const [showSettings, setShowSettings] = useState(false);
 
   const [camera, setCamera] = useState(null);
 
@@ -317,7 +321,8 @@ export default function BaseLayoutScreen(props) {
                 setVisible(false);
                 if (!isFromShape) {
                   if (action === "settings") {
-                    navigate.navigate("SettingScreen");
+                    setShowSettings(() => true);
+                    //navigate.navigate("SettingScreen");
                     return;
                   } else if (
                     (action === "remove_points" || action === "add_points") &&
@@ -353,6 +358,19 @@ export default function BaseLayoutScreen(props) {
         <Ionicons name="ios-arrow-round-back" color="white" size={42} />
       </TouchableOpacity>
 
+      <Modal visible={showSettings} animationType="slide">
+        <View style={{ flex: 1, paddingHorizontal: 10, paddingVertical: 10 }}>
+          <TouchableOpacity
+            style={styles.backModal}
+            onPress={() => {
+              setShowSettings(() => false);
+            }}
+          >
+            <Ionicons name="ios-arrow-round-back" color="black" size={42} />
+          </TouchableOpacity>
+          <SettingModal currShapes={currShapes} currPoints={currPoints}/>
+        </View>
+      </Modal>
       <BottomDrawer
         containerHeight={SCREEN_HEIGHT / 5}
         offset={0}
@@ -402,11 +420,11 @@ export default function BaseLayoutScreen(props) {
                     setIsFromShape(() => false);
                   }
                   if (item.action === "settings") {
-                    navigate.navigate("SettingScreen");
+                    setShowSettings(() => true);
                     return;
                   }
                   setVisible(true);
-                  setPointsConnect(() => []); 
+                  setPointsConnect(() => []);
                   setAction(() => item.action);
                   setPopUpComp(item.component);
                 }}
@@ -438,4 +456,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  backModal: {
+    width: 42,
+    height: 42,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  }
 });

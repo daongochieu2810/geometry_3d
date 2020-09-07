@@ -15,7 +15,6 @@ import AddCone from "./AddCone";
 import AddCustom from "./AddCustom";
 const SCREEN_WIDTH = Dimensions.get("screen").width;
 const SCREEN_HEIGHT = Dimensions.get("screen").height;
-
 const _basicShapes = [
   {
     id: 0,
