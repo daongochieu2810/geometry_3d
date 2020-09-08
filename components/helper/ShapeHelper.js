@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { ConvexBufferGeometry } from "three/examples/jsm/geometries/ConvexGeometry";
 const raw_font = require("../../assets/fonts/bebas_neue.typeface");
 const font = new THREE.Font(raw_font);
 export const getVerticesWithText = (mesh, type) => {
@@ -182,6 +183,7 @@ const addBasicShapes = (
     edges: line,
     color: color,
     name: name,
+    type: type,
     id: props.basicComponents.shapes.length,
     rotation: rotation,
     position: position,
@@ -253,6 +255,7 @@ export const loadSavedState = (props, scene, updatePoints) => {
       color: shape.color,
       edges: edges,
       name: shape.name,
+      type: shape.type,
       id: shape.id,
       rotation: shape.rotation,
       position: shape.position,

@@ -25,7 +25,7 @@ import Dialog, {
 import ControlPoints from "../components/pop_up_components/ControlPoints";
 import ControlShapes from "../components/pop_up_components/ControlShapes";
 import EditPoints from "../components/pop_up_components/EditPoints";
-import Settings from "../components/pop_up_components/Settings";
+import CameraSettings from "../components/pop_up_components/CameraSettings";
 import Toast from "react-native-toast-message";
 import SettingModal from "./objects3d/SettingModal";
 
@@ -173,9 +173,20 @@ export default function BaseLayoutScreen(props) {
     },
     {
       index: 6,
-      name: "Settings",
-      component: <Settings existingShapes={currShapes} camera={camera} />,
+      name: "Camera Settings",
+      component: (
+        <CameraSettings
+          existingShapes={currShapes ? currShapes : []}
+          camera={camera}
+        />
+      ),
       action: "settings",
+    },
+    {
+      index: 7,
+      name: "Advanced Settings",
+      component: null,
+      action: "advanced_settings",
     },
   ];
   const onPointsEditPopUpDone = () => {
@@ -321,9 +332,6 @@ export default function BaseLayoutScreen(props) {
                 setVisible(false);
                 if (!isFromShape) {
                   if (action === "settings") {
-                    setShowSettings(() => true);
-                    //navigate.navigate("SettingScreen");
-                    return;
                   } else if (
                     (action === "remove_points" || action === "add_points") &&
                     pointsEdit
@@ -359,7 +367,14 @@ export default function BaseLayoutScreen(props) {
       </TouchableOpacity>
 
       <Modal visible={showSettings} animationType="slide">
-        <View style={{ flex: 1, paddingHorizontal: 10, paddingVertical: 10 }}>
+        <View
+          style={{
+            flex: 1,
+            paddingHorizontal: 10,
+            paddingVertical: 10,
+            backgroundColor: "white",
+          }}
+        >
           <TouchableOpacity
             style={styles.backModal}
             onPress={() => {
@@ -368,7 +383,7 @@ export default function BaseLayoutScreen(props) {
           >
             <Ionicons name="ios-arrow-round-back" color="black" size={42} />
           </TouchableOpacity>
-          <SettingModal currShapes={currShapes} currPoints={currPoints}/>
+          <SettingModal currShapes={currShapes} currPoints={currPoints} />
         </View>
       </Modal>
       <BottomDrawer
@@ -411,7 +426,8 @@ export default function BaseLayoutScreen(props) {
                   margin: 5,
                 }}
                 onPress={() => {
-                  if (
+                  if (item.action === "settings") {
+                  } else if (
                     item.action === "add_shapes" ||
                     item.action === "remove_shapes"
                   ) {
@@ -419,7 +435,7 @@ export default function BaseLayoutScreen(props) {
                   } else {
                     setIsFromShape(() => false);
                   }
-                  if (item.action === "settings") {
+                  if (item.action === "advanced_settings") {
                     setShowSettings(() => true);
                     return;
                   }
@@ -462,5 +478,5 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-  }
+  },
 });

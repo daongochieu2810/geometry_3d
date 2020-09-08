@@ -8,7 +8,8 @@ export default class UniCameraHandler {
     this.distanceTarget = 10;
     this.prevDist = 0;
     this.camera.position.z = this.distance;
-    this.currentCenter = {x: 0,y: 0,z: 0};
+    this.currentCenter = { x: 0, y: 0, z: 0 };
+    this.sensitivity = 1;
 
     this.mouse = { x: 0, y: 0 };
     this.touch = { x: 0, y: 0 };
@@ -18,7 +19,6 @@ export default class UniCameraHandler {
 
     this.target = { x: (Math.PI * 3) / 2, y: Math.PI / 6.0 };
     this.targetOnDown = { x: 0, y: 0 };
-
   }
 
   handlePanResponderGrant = (event) => {
@@ -27,14 +27,12 @@ export default class UniCameraHandler {
     this.touch.x = (event.pageX / window.innerWidth) * 2 - 1;
     this.touch.y = -(event.pageY / window.innerHeight) * 2 + 1;
 
-
     this.mouseOnDown.x = -event.pageX;
     this.mouseOnDown.y = event.pageY;
 
     this.targetOnDown.x = this.target.x;
     this.targetOnDown.y = this.target.y;
   };
-
   handlePanResponderMove = (event, gestureState) => {
     //if(this.mousedown){
     this.mouse.x = -event.pageX;
@@ -56,10 +54,10 @@ export default class UniCameraHandler {
     } else {
       this.target.x =
         this.targetOnDown.x +
-        (this.mouse.x - this.mouseOnDown.x) / 100 ;
+        (this.mouse.x - this.mouseOnDown.x) / (100 / this.sensitivity);
       this.target.y =
         this.targetOnDown.y +
-        (this.mouse.y - this.mouseOnDown.y)  / 100;
+        (this.mouse.y - this.mouseOnDown.y) / (100 / this.sensitivity);
       this.target.y =
         this.target.y > this.PI_HALF ? this.PI_HALF : this.target.y;
       this.target.y =
@@ -74,6 +72,9 @@ export default class UniCameraHandler {
 
   setCenter = (center) => {
     this.currentCenter = center;
+  };
+  setSensitivity = (num) => {
+    this.sensitivity = num;
   };
 
   zoom = (delta) => {
@@ -98,8 +99,11 @@ export default class UniCameraHandler {
     this.camera.position.y = this.distance * Math.sin(this.rotation.y);
     this.camera.position.z =
       this.distance * Math.cos(this.rotation.x) * Math.cos(this.rotation.y);
-
-    this.camera.lookAt(this.currentCenter.x, this.currentCenter.y, this.currentCenter.z);
+    this.camera.lookAt(
+      this.currentCenter.x,
+      this.currentCenter.y,
+      this.currentCenter.z
+    );
     for (let index in listOfObject) {
       let verticeObject = listOfObject[index];
       const text = verticeObject.text;

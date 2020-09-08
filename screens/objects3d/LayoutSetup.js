@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
-  Vibration,
 } from "react-native";
 import UniCameraHandler from "./UniCameraHandler";
 import ExpoTHREE from "expo-three";
@@ -27,12 +26,9 @@ import {
   connectPoints,
   disconnectPoints,
 } from "../../components/helper/PointHelper";
-import { ConvexBufferGeometry } from "three/examples/jsm/geometries/ConvexGeometry";
 import Toast from "react-native-toast-message";
 //import DragControls from "../../components/helper/DragControls";
 import { formatDateTime } from "../../components/helper/DatabaseHelper";
-import Shape from "./Shape";
-
 const mapDispatchToProps = (dispatch) => {
   return {
     reduxSetBasicComponents: (components) => {
@@ -214,9 +210,9 @@ function LayoutSetup(props) {
   const onContextCreate = ({ gl, width, height, scale }) => {
     if (props.basicComponents.scene) props.basicComponents.scene.dispose();
 
-    //props.reduxSetPoint([]);
-    //props.reduxSetLine([]);
-    //props.reduxSetShape([]);
+    props.reduxSetPoint([]);
+    props.reduxSetLine([]);
+    props.reduxSetShape([]);
     props.reduxSetDisableCamera(false);
     //props.reduxSetControls(null);
 
@@ -281,7 +277,7 @@ function LayoutSetup(props) {
       scene: scene,
       renderer: renderer,
     });
-    
+
     if (geometry) {
       let mesh = new THREE.Mesh(geometry, material);
       let edges = new THREE.EdgesGeometry(geometry);
@@ -299,6 +295,7 @@ function LayoutSetup(props) {
           edges: line,
           color: "#e7ff37",
           name: "default",
+          type: props.initShape,
           id: 0,
         },
       ]);

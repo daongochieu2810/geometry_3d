@@ -18,3 +18,4 @@ ExpoGL.View was used as the container for three-js objects.
 # Todos
 1. Add more geometry-related features i.e draw perpendicular and parallel line, mark lines' intersections,...
 2. Allow users to draw shapes instead of filling in coordinates
+3. Custom axis orientation
