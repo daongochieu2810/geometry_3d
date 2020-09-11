@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import ExpoTHREE from "expo-three";
 import ExpoGraphics from "expo-graphics";
@@ -12,7 +12,6 @@ export default function SingleShapeView({ shape }) {
     return event;
   };
 
-  //Should we become active when the user presses down on the square?
   const handleStartShouldSetPanResponder = () => {
     return true;
   };
@@ -20,27 +19,20 @@ export default function SingleShapeView({ shape }) {
   // We were granted responder status! Let's update the UI
   const handlePanResponderGrant = (e, gestureState) => {
     const event = _transformEvent({ ...e, gestureState });
-    cameraHandler.handlePanResponderGrant(
-      event.nativeEvent
-    );
+    cameraHandler.handlePanResponderGrant(event.nativeEvent);
   };
 
   // Every time the touch/mouse moves
   const handlePanResponderMove = (e, gestureState) => {
     // Keep track of how far we've moved in total (dx and dy)
     const event = _transformEvent({ ...e, gestureState });
-    cameraHandler.handlePanResponderMove(
-      event.nativeEvent,
-      gestureState
-    );
+    cameraHandler.handlePanResponderMove(event.nativeEvent, gestureState);
   };
 
   // When the touch/mouse is lifted
   const handlePanResponderEnd = (e, gestureState) => {
     const event = _transformEvent({ ...e, gestureState });
-    cameraHandler.handlePanResponderEnd(
-      event.nativeEvent
-    );
+    cameraHandler.handlePanResponderEnd(event.nativeEvent);
   };
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: handleStartShouldSetPanResponder,
@@ -65,10 +57,7 @@ export default function SingleShapeView({ shape }) {
 
   const onRender = () => {
     cameraHandler.render(points);
-    renderer.render(
-      scene,
-      camera
-    );
+    renderer.render(scene, camera);
   };
 
   return (
