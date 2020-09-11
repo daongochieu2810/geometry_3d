@@ -20,6 +20,7 @@ const icons = {
   sphere: require("../../assets/sphere.png"),
   prism: require("../../assets/prism.png"),
 };
+import SingleShapeView from "./SingleShapeView";
 
 const mapDispatchToProps = (dispatch) => {
   return {};
@@ -95,7 +96,42 @@ function SettingScreen(props) {
           >
             <Ionicons name="ios-arrow-round-back" color="black" size={42} />
           </TouchableOpacity>
-          <Text style={{fontSize: 20, marginLeft: 10}}>{chosenShape ? chosenShape.name : ""}</Text>
+          <Text style={{ fontSize: 20, marginLeft: 10, marginBottom: 10 }}>
+            {chosenShape ? chosenShape.name : ""}
+          </Text>
+          <View style={{ flexDirection: "row", width: "100%", height: "30%" }}>
+            <SingleShapeView
+              shape={chosenShape ? chosenShape.object : null}
+              edges={chosenShape ? chosenShape.edges : null}
+            />
+            <View style={{ width: "50%", marginLeft: 5, paddingHorizontal: 5 }}>
+              <Text style={{ marginBottom: 5 }}>Assign vertices</Text>
+              <FlatList
+                style={{
+                  height: "100%",
+                  borderWidth: 1,
+                  borderColor: "black",
+                }}
+              />
+            </View>
+          </View>
+          <View
+            style={{
+              flex: 1,
+              marginTop: 10,
+              padding: 10,
+              marginRight: 5,
+              borderWidth: 1,
+              borderColor: "black",
+            }}
+          >
+            <Text style={{fontSize: 20}}>Specs</Text>
+            <View style={{paddingLeft: 5, marginTop: 5}}>
+              <Text>Position</Text>
+              <Text>Rotation</Text>
+              <Text>Sizes</Text>
+            </View>
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
