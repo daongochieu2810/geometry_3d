@@ -9,6 +9,7 @@ import {
   Modal,
   TouchableOpacity,
   Image,
+  TextInput,
 } from "react-native";
 import { connect } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,6 +37,8 @@ export default connect(mapStateToProps, mapDispatchToProps)(SettingScreen);
 function SettingScreen(props) {
   const [showShapeModal, setShowShapeModal] = useState(false);
   const [chosenShape, setChosenShape] = useState(null);
+  const [chosenPoint, setChosenPoint] = useState(null);
+  const [currentName, setCurrentName] = useState("");
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flexDirection: "row" }}>
@@ -103,33 +106,103 @@ function SettingScreen(props) {
             <SingleShapeView
               shape={chosenShape ? chosenShape.object : null}
               edges={chosenShape ? chosenShape.edges : null}
+              points={chosenShape ? chosenShape.points : null}
             />
             <View style={{ width: "50%", marginLeft: 5, paddingHorizontal: 5 }}>
               <Text style={{ marginBottom: 5 }}>Assign vertices</Text>
               <FlatList
+                showsVerticalScrollIndicator={false}
                 style={{
-                  height: "100%",
-                  borderWidth: 1,
-                  borderColor: "black",
+                  flex: 1,
                 }}
+                extraData={chosenShape ? chosenShape.points : null}
+                keyExtractor={(item, index) => index + " vertex"}
+                data={chosenShape ? chosenShape.points : []}
+                renderItem={({ index, item }) => (
+                  <TouchableOpacity
+                    style={styles.vertex}
+                    onPress={() => {
+                      setChosenPoint(() => item);
+                      setCurrentName(() => item.trueText);
+                      //console.log(item.trueText);
+                    }}
+                  >
+                    <Text>
+                      {item.trueText} (x:{" "}
+                      {Math.round(item.position.x * 100) / 100}, y:{" "}
+                      {Math.round(item.position.y * 100) / 100}, z:{" "}
+                      {Math.round(item.position.z * 100) / 100})
+                    </Text>
+                  </TouchableOpacity>
+                )}
               />
             </View>
           </View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              marginTop: 10,
+            }}
+          >
+            <Text
+              style={{
+                marginTop: 5,
+                marginRight: 5,
+                fontSize: 16,
+                color: "blue",
+              }}
+            >
+              Re-assign name:
+            </Text>
+            <TextInput
+              style={styles.input}
+              onChangeText={(text) => {
+                chosenPoint.trueText = text;
+                setCurrentName(() => text);
+              }}
+              value={currentName}
+            />
+          </View>
+
           <View
             style={{
               flex: 1,
-              marginTop: 10,
+              marginTop: 5,
               padding: 10,
               marginRight: 5,
-              borderWidth: 1,
-              borderColor: "black",
             }}
           >
-            <Text style={{fontSize: 20}}>Specs</Text>
-            <View style={{paddingLeft: 5, marginTop: 5}}>
+            <Text style={{ fontSize: 20 }}>Specs</Text>
+            <View style={{ paddingLeft: 5, marginTop: 5 }}>
               <Text>Position</Text>
-              <Text>Rotation</Text>
-              <Text>Sizes</Text>
+              <View style={{ flexDirection: "row" }}>
+                <Text style={styles.textItem}>
+                  x: {chosenShape ? chosenShape.position.x : ""}
+                </Text>
+                <Text style={styles.textItem}>
+                  y: {chosenShape ? chosenShape.position.y : ""}
+                </Text>
+                <Text style={styles.textItem}>
+                  z: {chosenShape ? chosenShape.position.z : ""}
+                </Text>
+              </View>
+              {chosenShape && chosenShape.rotation && (
+                <View>
+                  <Text>Rotation</Text>
+                  <View style={{ flexDirection: "row" }}>
+                    <Text style={styles.textItem}>
+                      x: {chosenShape ? chosenShape.rotation.x : ""}
+                    </Text>
+                    <Text style={styles.textItem}>
+                      y: {chosenShape ? chosenShape.rotation.y : ""}
+                    </Text>
+                    <Text style={styles.textItem}>
+                      z: {chosenShape ? chosenShape.rotation.z : ""}
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -154,11 +227,29 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     marginRight: 10,
   },
+  textItem: {
+    marginHorizontal: 10,
+    marginVertical: 5,
+  },
+  vertex: {
+    backgroundColor: "#e7ff37",
+    margin: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
   backModal: {
     width: 42,
     height: 42,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
+  },
+  input: {
+    marginRight: 10,
+    width: width * 0.15,
+    borderBottomColor: "#8a8a8a",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    fontSize: 15,
   },
 });

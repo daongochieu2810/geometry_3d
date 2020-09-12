@@ -5,7 +5,7 @@ import ExpoGraphics from "expo-graphics";
 import * as THREE from "three";
 import UniCameraHandler from "./UniCameraHandler";
 
-export default function SingleShapeView({ shape, edges }) {
+export default function SingleShapeView({ shape, edges, points }) {
   /*const [cameraHandler, setCameraHandler] = useState(null);
   const [renderer, setRenderer] = useState(null);
   const [camera, setCamera] = useState(null);
@@ -14,6 +14,14 @@ export default function SingleShapeView({ shape, edges }) {
   let renderer = null;
   let camera = null;
   let scene = null;
+  const clonePoints = points
+    ? points.map((item) => {
+        return {
+          ...item,
+          text: item.text.clone(),
+        };
+      })
+    : [];
 
   const _transformEvent = (event) => {
     event.preventDefault = event.preventDefault || (() => {});
@@ -54,7 +62,7 @@ export default function SingleShapeView({ shape, edges }) {
     onPanResponderTerminationRequest: () => true,
   });
   const fitCameraToObject = (camera, object) => {
-    let offset = 10;
+    let offset = 5;
 
     const boundingBox = new THREE.Box3();
 
@@ -62,19 +70,13 @@ export default function SingleShapeView({ shape, edges }) {
     boundingBox.setFromObject(object);
     const size = boundingBox.getSize();
     // get the max side of the bounding box (fits to width OR height as needed )
-    const maxDim = Math.max(size.x, size.y, size.z);
-    console.log(maxDim);
+    let maxDim = Math.max(size.x, size.y, size.z);
+    //console.log(maxDim);
     const fov = camera.fov * (Math.PI / 180);
     let cameraZ = Math.abs((maxDim / 4) * Math.tan(fov * 2));
 
     cameraZ *= offset; // zoom out a little so that objects don't fill the screen
-    //console.log(cameraZ);
-    if (maxDim >= 10) {
-      camera.fov = cameraZ + 80;
-    } else {
-      camera.fov = cameraZ + 40;
-    }
-    camera.updateProjectionMatrix();
+    return cameraZ;
   };
 
   const onContextCreate = ({ gl, width, height, scale }) => {
@@ -89,14 +91,17 @@ export default function SingleShapeView({ shape, edges }) {
     cloneShape.position.set(0, 0, 0);
     cloneEdges.position.set(0, 0, 0);
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 2000);
-    fitCameraToObject(camera, cloneShape);
-    cameraHandler = new UniCameraHandler(camera);
+    camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 10000);
+    const baseDistance = fitCameraToObject(camera, cloneShape);
+    cameraHandler = new UniCameraHandler(camera, baseDistance);
     scene.add(cloneShape, cloneEdges);
+    for (let point of clonePoints) {
+      scene.add(point.text);
+    }
   };
 
   const onRender = (_, _cameraHandler, _renderer, _scene, _camera) => {
-    _cameraHandler.render([]);
+    _cameraHandler.render(clonePoints);
     _renderer.render(_scene, _camera);
   };
 
