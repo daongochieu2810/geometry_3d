@@ -22,6 +22,7 @@ const icons = {
   prism: require("../../assets/prism.png"),
 };
 import SingleShapeView from "./SingleShapeView";
+import {loadTextVertex} from '../../components/helper/PointHelper';
 
 const mapDispatchToProps = (dispatch) => {
   return {};
@@ -83,6 +84,89 @@ function SettingScreen(props) {
         />
       </View>
       <Modal visible={showShapeModal} animationType="slide">
+        <Modal
+          visible={chosenPoint ? true : false}
+          transparent={true}
+          animationType="slide"
+        >
+          <View
+            style={{
+              backgroundColor: "rgba(0,0,0,0.5)",
+              justifyContent: "center",
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <View
+              style={{
+                width: width * 0.8,
+                backgroundColor: "white",
+                borderRadius: 5,
+                padding: 10,
+              }}
+            >
+              <View style={{ flexDirection: "row", marginLeft: 10 }}>
+                <Text style={{ marginTop: 5, marginRight: 5 }}>
+                  Rename vertex:{" "}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  onChangeText={(text) => {
+                    setCurrentName(() => text);
+                  }}
+                  value={currentName}
+                />
+              </View>
+              <View
+                style={{
+                  marginTop: 15,
+                  flexDirection: "row",
+                  paddingVertical: 5,
+                  justifyContent: "space-around"
+                }}
+              >
+                <TouchableOpacity
+                  style={{
+                    width: width * 0.37,
+                    paddingVertical: 5,
+                  }}
+                  onPress={() => {
+                    setChosenPoint(() => null);
+                  }}
+                >
+                  <Text style={{ color: "red", textAlign: "center" }}>
+                    CANCEL
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    width: width * 0.37,
+                    paddingVertical: 5,
+                  }}
+                  onPress={() => {
+                    chosenPoint.trueText = currentName;
+                    const oldTextGeo = chosenPoint.text;
+                    props.basicComponents.scene.remove(oldTextGeo);
+                    const newTextGeo = loadTextVertex(chosenPoint);
+                    chosenPoint.text = newTextGeo;
+                    props.basicComponents.scene.add(newTextGeo);
+                    props.basicComponents.points.map(item => {
+                      if( item === oldTextGeo ) {
+                        return newTextGeo;
+                      }
+                      return item;
+                    })
+                    setChosenPoint(() => null);
+                  }}
+                >
+                  <Text style={{ color: "green", textAlign: "center" }}>
+                    DONE
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
         <View
           style={{
             flex: 1,
@@ -124,7 +208,6 @@ function SettingScreen(props) {
                     onPress={() => {
                       setChosenPoint(() => item);
                       setCurrentName(() => item.trueText);
-                      //console.log(item.trueText);
                     }}
                   >
                     <Text>
@@ -138,33 +221,6 @@ function SettingScreen(props) {
               />
             </View>
           </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              marginTop: 10,
-            }}
-          >
-            <Text
-              style={{
-                marginTop: 5,
-                marginRight: 5,
-                fontSize: 16,
-                color: "blue",
-              }}
-            >
-              Re-assign name:
-            </Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={(text) => {
-                chosenPoint.trueText = text;
-                setCurrentName(() => text);
-              }}
-              value={currentName}
-            />
-          </View>
-
           <View
             style={{
               flex: 1,

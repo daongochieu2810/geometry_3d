@@ -9,16 +9,22 @@ const initState = {
   lines: [],
   shapes: [],
 };
+const singleShapeState = {
+  scene: null,
+  camera: null,
+  cameraHandler: null,
+  renderer: null,
+};
 const saveInitState = {
   items: [],
   //each item has shapes, lines, points and name
 };
 const initCurrentUserState = {
-  user: {}
+  user: {},
 };
 const initMiscData = {
   canRetrieve: true,
-  disableCamera: false
+  disableCamera: false,
 };
 
 const basicComponentsReducer = (state = initState, action) => {
@@ -85,20 +91,20 @@ const saveComponentsReducer = (state = saveInitState, action) => {
       state.items.push(action.item);
       return {
         ...state,
-        items: state.items
+        items: state.items,
       };
     }
     case "REMOVE_SAVE_ITEM": {
       //state.items = state.items.filter((item) => item !== action.item);
       return {
         ...state,
-        items: state.items.filter((item) => item !== action.item)
+        items: state.items.filter((item) => item !== action.item),
       };
     }
     case "SET_SAVE_ITEM": {
       return {
         ...state,
-        items: action.items
+        items: action.items,
       };
     }
     default: {
@@ -107,14 +113,14 @@ const saveComponentsReducer = (state = saveInitState, action) => {
   }
 };
 const currentUserReducer = (state = initCurrentUserState, action) => {
-  switch(action.type) {
-      case "SET_CURRENT_USER": {
-        state.user = action.user;
-          return state;
-      }
-      default: {
-          return state;
-      }
+  switch (action.type) {
+    case "SET_CURRENT_USER": {
+      state.user = action.user;
+      return state;
+    }
+    default: {
+      return state;
+    }
   }
 };
 const miscDataReducer = (state = initMiscData, action) => {
@@ -128,10 +134,34 @@ const miscDataReducer = (state = initMiscData, action) => {
     }
   }
 };
+const singleShapeComponentsReducer = (state = singleShapeState, action) => {
+  switch (action.type) {
+    case "SET_SINGLE_CAMERA": {
+      state.camera = action.camera;
+      return state;
+    }
+    case "SET_SINGLE_RENDERER": {
+      state.renderer = action.renderer;
+      return state;
+    }
+    case "SET_SINGLE_CAMERA_HANDLER": {
+      state.cameraHandler = action.cameraHandler;
+      return state;
+    }
+    case "SET_SINGLE_SCENE": {
+      state.scene = action.scene;
+      return state;
+    }
+    default: {
+      return state;
+    }
+  }
+};
 
 export default combineReducers({
   basicComponents: basicComponentsReducer,
   saveComponents: saveComponentsReducer,
   currentUser: currentUserReducer,
-  miscData: miscDataReducer
+  miscData: miscDataReducer,
+  singleShapeComponents: singleShapeComponentsReducer,
 });

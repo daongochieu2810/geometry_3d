@@ -1,20 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet, PanResponder } from "react-native";
 import ExpoTHREE from "expo-three";
 import ExpoGraphics from "expo-graphics";
 import * as THREE from "three";
 import UniCameraHandler from "./UniCameraHandler";
-
-export default function SingleShapeView({ shape, edges, points }) {
+import { connect } from "react-redux";
+import actions from "../../actions";
+const mapDispatchToProps = (dispatch) => {
+  return {
+    reduxSetSingleShapeComponents: (components) => {
+      dispatch(actions.setSingleCamera(components.camera));
+      dispatch(actions.setSingleCameraHandler(components.cameraHandler));
+      dispatch(actions.setSingleRenderer(components.renderer));
+      dispatch(actions.setSingleScene(components.scene));
+    },
+  };
+};
+const mapStateToProps = (state) => {
+  return {
+    singleShapeComponents: state.singleShapeComponents,
+  };
+};
+export default connect(mapStateToProps, mapDispatchToProps)(SingleShapeView);
+function SingleShapeView(props) {
+  const { shape, edges, points } = props;
   /*const [cameraHandler, setCameraHandler] = useState(null);
   const [renderer, setRenderer] = useState(null);
   const [camera, setCamera] = useState(null);
   const [scene, setScene] = useState(null);*/
-  let cameraHandler = null;
-  let renderer = null;
-  let camera = null;
-  let scene = null;
-  const clonePoints = points
+  useEffect(() => {
+    console.log("change");
+  },[points]);
+
+  let clonePoints = points
     ? points.map((item) => {
         return {
           ...item,
@@ -37,6 +55,7 @@ export default function SingleShapeView({ shape, edges, points }) {
   // We were granted responder status! Let's update the UI
   const handlePanResponderGrant = (e, gestureState) => {
     const event = _transformEvent({ ...e, gestureState });
+    const { cameraHandler } = props.singleShapeComponents;
     if (cameraHandler) cameraHandler.handlePanResponderGrant(event.nativeEvent);
   };
 
@@ -44,11 +63,13 @@ export default function SingleShapeView({ shape, edges, points }) {
   const handlePanResponderMove = (e, gestureState) => {
     // Keep track of how far we've moved in total (dx and dy)
     const event = _transformEvent({ ...e, gestureState });
+    const { cameraHandler } = props.singleShapeComponents;
     cameraHandler.handlePanResponderMove(event.nativeEvent, gestureState);
   };
 
   // When the touch/mouse is lifted
   const handlePanResponderEnd = (e, gestureState) => {
+    const { cameraHandler } = props.singleShapeComponents;
     const event = _transformEvent({ ...e, gestureState });
     cameraHandler.handlePanResponderEnd(event.nativeEvent);
   };
@@ -80,29 +101,41 @@ export default function SingleShapeView({ shape, edges, points }) {
   };
 
   const onContextCreate = ({ gl, width, height, scale }) => {
-    renderer = new ExpoTHREE.Renderer({ gl });
-    renderer.setPixelRatio(scale);
-    renderer.setSize(width, height);
-    renderer.setClearColor(0x000000, 1.0);
+    let _renderer = new ExpoTHREE.Renderer({ gl });
+    _renderer.setPixelRatio(scale);
+    _renderer.setSize(width, height);
+    _renderer.setClearColor(0x000000, 1.0);
     //console.log(renderer.domElement)
 
     const cloneShape = shape.clone();
     const cloneEdges = edges.clone();
     cloneShape.position.set(0, 0, 0);
     cloneEdges.position.set(0, 0, 0);
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 10000);
-    const baseDistance = fitCameraToObject(camera, cloneShape);
-    cameraHandler = new UniCameraHandler(camera, baseDistance);
-    scene.add(cloneShape, cloneEdges);
+    let _scene = new THREE.Scene();
+    let _camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 10000);
+    const baseDistance = fitCameraToObject(_camera, cloneShape);
+    let _cameraHandler = new UniCameraHandler(_camera, baseDistance);
+    _scene.add(cloneShape, cloneEdges);
     for (let point of clonePoints) {
-      scene.add(point.text);
+      _scene.add(point.text);
     }
+    props.reduxSetSingleShapeComponents({
+      cameraHandler: _cameraHandler,
+      camera: _camera,
+      renderer: _renderer,
+      scene: _scene,
+    });
   };
 
-  const onRender = (_, _cameraHandler, _renderer, _scene, _camera) => {
-    _cameraHandler.render(clonePoints);
-    _renderer.render(_scene, _camera);
+  const onRender = () => {
+    let {
+      cameraHandler,
+      renderer,
+      camera,
+      scene,
+    } = props.singleShapeComponents;
+    cameraHandler.render(clonePoints);
+    renderer.render(scene, camera);
   };
 
   return (
@@ -119,9 +152,7 @@ export default function SingleShapeView({ shape, edges, points }) {
         onContextCreate={(props) => {
           onContextCreate(props);
         }}
-        onRender={(_props) =>
-          onRender(_props, cameraHandler, renderer, scene, camera)
-        }
+        onRender={(_props) => onRender(_props)}
         arEnabled={false}
         onShouldReloadContext={() => true}
       />

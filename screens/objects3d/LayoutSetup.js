@@ -394,7 +394,7 @@ function LayoutSetup(props) {
       <TouchableOpacity
         style={{
           backgroundColor: "black",
-          top: 32,
+          top: 20,
           right: 90,
           position: "absolute",
           paddingVertical: 5,
@@ -419,7 +419,7 @@ function LayoutSetup(props) {
       <TouchableOpacity
         style={{
           backgroundColor: "black",
-          top: 32,
+          top: 20,
           right: 20,
           position: "absolute",
           paddingVertical: 5,

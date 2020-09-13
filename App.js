@@ -1,8 +1,6 @@
-import { StatusBar } from "expo-status-bar";
-import { SplashScreen, AppLoading } from "expo";
-import React, { useState } from "react";
+import React from "react";
 import { createAppContainer, createSwitchNavigator } from "react-navigation";
-import { StyleSheet, Animated , View, Text} from "react-native";
+import { StyleSheet, Platform, StatusBar, View } from "react-native";
 import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import { Ionicons } from "@expo/vector-icons";
@@ -101,7 +99,7 @@ const Object3DNavigator = createStackNavigator(
     },
     PrismScreen: {
       screen: (props) => <PrismScreen initShape={"prism"} {...props} />,
-    }
+    },
   },
   {
     headerMode: "none",
@@ -129,9 +127,16 @@ export default function App() {
         persistor={globalStorage.persistor}
         loading={<Spinner visible={true} />}
       >
-        <AppNavigator />
-       <Toast ref={(ref) => Toast.setRef(ref)} />
-          <StatusBar style="dark" translucent={true} />
+        <StatusBar style="dark" translucent={true} />
+        <View
+          style={{
+            flex: 1,
+            marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+          }}
+        >
+          <AppNavigator/>
+        </View>
+        <Toast ref={(ref) => Toast.setRef(ref)} />
       </PersistGate>
     </Provider>
   );

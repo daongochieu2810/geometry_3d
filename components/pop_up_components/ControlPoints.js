@@ -5,8 +5,6 @@ import {
   FlatList,
   TouchableOpacity,
   Dimensions,
-  TextInput,
-  StyleSheet,
 } from "react-native";
 import * as THREE from "three";
 

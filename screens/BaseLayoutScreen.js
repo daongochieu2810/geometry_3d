@@ -388,7 +388,7 @@ export default function BaseLayoutScreen(props) {
       </Modal>
       <BottomDrawer
         containerHeight={SCREEN_HEIGHT / 5}
-        offset={0}
+        offset={SCREEN_HEIGHT / 20}
         startUp={false}
         downDisplay={SCREEN_HEIGHT / 6.5}
       >
@@ -463,7 +463,7 @@ export default function BaseLayoutScreen(props) {
 const styles = StyleSheet.create({
   back: {
     position: "absolute",
-    top: 32,
+    top: 20,
     left: 16,
     width: 42,
     height: 42,
