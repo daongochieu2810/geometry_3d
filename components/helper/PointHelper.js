@@ -47,3 +47,21 @@ export const removePoints = (props, updatePoints, points) => {
   }
   updatePoints();
 };
+
+const raw_font = require("../../assets/fonts/bebas_neue.typeface.json");
+const font = new THREE.Font(raw_font);
+export const loadTextVertex = (item) => {
+  const vertex = item.position;
+  const textGeo = new THREE.TextGeometry(item.trueText, {
+    font: font,
+    size: 0.5,
+    height: 0.01,
+  });
+
+  let textMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+  });
+  let text = new THREE.Mesh(textGeo, textMaterial);
+  text.position.set(vertex.x, vertex.y, vertex.z);
+  return text;
+};

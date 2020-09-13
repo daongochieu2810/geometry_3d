@@ -1,3 +1,4 @@
+//basicShapeComponents
 const setCamera = (data) => ({
   type: "SET_CAMERA",
   camera: data,
@@ -12,8 +13,8 @@ const setScene = (data) => ({
 });
 const setControls = (data) => ({
   type: "SET_CONTROLS",
-  controls: data
-})
+  controls: data,
+});
 const setRenderer = (data) => ({
   type: "SET_RENDERER",
   renderer: data,
@@ -46,6 +47,7 @@ const removeShape = (shape) => ({
   type: "REMOVE_SHAPE",
   shape: shape,
 });
+//saveComponents
 const addSaveItem = (item) => ({
   type: "ADD_SAVE_ITEM",
   item: item,
@@ -56,15 +58,32 @@ const removeSaveItem = (item) => ({
 });
 const setSaveItem = (items) => ({
   type: "SET_SAVE_ITEM",
-  items: items
+  items: items,
 });
 const setCurrentUser = (data) => ({
   type: "SET_CURRENT_USER",
-  user: data
+  user: data,
 });
 const setDisableCamera = (data) => ({
   type: "SET_DISABLE_CAMERA",
-  disableCamera: data
+  disableCamera: data,
+});
+//singleShapeComponents
+const setSingleCamera = (data) => ({
+  type: "SET_SINGLE_CAMERA",
+  camera: data,
+});
+const setSingleScene = (data) => ({
+  type: "SET_SINGLE_SCENE",
+  scene: data,
+});
+const setSingleCameraHandler = (data) => ({
+  type: "SET_SINGLE_CAMERA_HANDLER",
+  cameraHandler: data,
+});
+const setSingleRenderer = (data) => ({
+  type: "SET_SINGLE_RENDERER",
+  renderer: data,
 });
 export default {
   setCamera,
@@ -83,5 +102,9 @@ export default {
   setCurrentUser,
   setSaveItem,
   setDisableCamera,
-  setControls
+  setControls,
+  setSingleCamera,
+  setSingleCameraHandler,
+  setSingleRenderer,
+  setSingleScene,
 };

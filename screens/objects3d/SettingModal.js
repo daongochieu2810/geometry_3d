@@ -9,6 +9,7 @@ import {
   Modal,
   TouchableOpacity,
   Image,
+  TextInput,
 } from "react-native";
 import { connect } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,6 +22,7 @@ const icons = {
   prism: require("../../assets/prism.png"),
 };
 import SingleShapeView from "./SingleShapeView";
+import {loadTextVertex} from '../../components/helper/PointHelper';
 
 const mapDispatchToProps = (dispatch) => {
   return {};
@@ -36,6 +38,8 @@ export default connect(mapStateToProps, mapDispatchToProps)(SettingScreen);
 function SettingScreen(props) {
   const [showShapeModal, setShowShapeModal] = useState(false);
   const [chosenShape, setChosenShape] = useState(null);
+  const [chosenPoint, setChosenPoint] = useState(null);
+  const [currentName, setCurrentName] = useState("");
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flexDirection: "row" }}>
@@ -80,6 +84,89 @@ function SettingScreen(props) {
         />
       </View>
       <Modal visible={showShapeModal} animationType="slide">
+        <Modal
+          visible={chosenPoint ? true : false}
+          transparent={true}
+          animationType="slide"
+        >
+          <View
+            style={{
+              backgroundColor: "rgba(0,0,0,0.5)",
+              justifyContent: "center",
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <View
+              style={{
+                width: width * 0.8,
+                backgroundColor: "white",
+                borderRadius: 5,
+                padding: 10,
+              }}
+            >
+              <View style={{ flexDirection: "row", marginLeft: 10 }}>
+                <Text style={{ marginTop: 5, marginRight: 5 }}>
+                  Rename vertex:{" "}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  onChangeText={(text) => {
+                    setCurrentName(() => text);
+                  }}
+                  value={currentName}
+                />
+              </View>
+              <View
+                style={{
+                  marginTop: 15,
+                  flexDirection: "row",
+                  paddingVertical: 5,
+                  justifyContent: "space-around"
+                }}
+              >
+                <TouchableOpacity
+                  style={{
+                    width: width * 0.37,
+                    paddingVertical: 5,
+                  }}
+                  onPress={() => {
+                    setChosenPoint(() => null);
+                  }}
+                >
+                  <Text style={{ color: "red", textAlign: "center" }}>
+                    CANCEL
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    width: width * 0.37,
+                    paddingVertical: 5,
+                  }}
+                  onPress={() => {
+                    chosenPoint.trueText = currentName;
+                    const oldTextGeo = chosenPoint.text;
+                    props.basicComponents.scene.remove(oldTextGeo);
+                    const newTextGeo = loadTextVertex(chosenPoint);
+                    chosenPoint.text = newTextGeo;
+                    props.basicComponents.scene.add(newTextGeo);
+                    props.basicComponents.points.map(item => {
+                      if( item === oldTextGeo ) {
+                        return newTextGeo;
+                      }
+                      return item;
+                    })
+                    setChosenPoint(() => null);
+                  }}
+                >
+                  <Text style={{ color: "green", textAlign: "center" }}>
+                    DONE
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
         <View
           style={{
             flex: 1,
@@ -103,33 +190,75 @@ function SettingScreen(props) {
             <SingleShapeView
               shape={chosenShape ? chosenShape.object : null}
               edges={chosenShape ? chosenShape.edges : null}
+              points={chosenShape ? chosenShape.points : null}
             />
             <View style={{ width: "50%", marginLeft: 5, paddingHorizontal: 5 }}>
               <Text style={{ marginBottom: 5 }}>Assign vertices</Text>
               <FlatList
+                showsVerticalScrollIndicator={false}
                 style={{
-                  height: "100%",
-                  borderWidth: 1,
-                  borderColor: "black",
+                  flex: 1,
                 }}
+                extraData={chosenShape ? chosenShape.points : null}
+                keyExtractor={(item, index) => index + " vertex"}
+                data={chosenShape ? chosenShape.points : []}
+                renderItem={({ index, item }) => (
+                  <TouchableOpacity
+                    style={styles.vertex}
+                    onPress={() => {
+                      setChosenPoint(() => item);
+                      setCurrentName(() => item.trueText);
+                    }}
+                  >
+                    <Text>
+                      {item.trueText} (x:{" "}
+                      {Math.round(item.position.x * 100) / 100}, y:{" "}
+                      {Math.round(item.position.y * 100) / 100}, z:{" "}
+                      {Math.round(item.position.z * 100) / 100})
+                    </Text>
+                  </TouchableOpacity>
+                )}
               />
             </View>
           </View>
           <View
             style={{
               flex: 1,
-              marginTop: 10,
+              marginTop: 5,
               padding: 10,
               marginRight: 5,
-              borderWidth: 1,
-              borderColor: "black",
             }}
           >
-            <Text style={{fontSize: 20}}>Specs</Text>
-            <View style={{paddingLeft: 5, marginTop: 5}}>
+            <Text style={{ fontSize: 20 }}>Specs</Text>
+            <View style={{ paddingLeft: 5, marginTop: 5 }}>
               <Text>Position</Text>
-              <Text>Rotation</Text>
-              <Text>Sizes</Text>
+              <View style={{ flexDirection: "row" }}>
+                <Text style={styles.textItem}>
+                  x: {chosenShape ? chosenShape.position.x : ""}
+                </Text>
+                <Text style={styles.textItem}>
+                  y: {chosenShape ? chosenShape.position.y : ""}
+                </Text>
+                <Text style={styles.textItem}>
+                  z: {chosenShape ? chosenShape.position.z : ""}
+                </Text>
+              </View>
+              {chosenShape && chosenShape.rotation && (
+                <View>
+                  <Text>Rotation</Text>
+                  <View style={{ flexDirection: "row" }}>
+                    <Text style={styles.textItem}>
+                      x: {chosenShape ? chosenShape.rotation.x : ""}
+                    </Text>
+                    <Text style={styles.textItem}>
+                      y: {chosenShape ? chosenShape.rotation.y : ""}
+                    </Text>
+                    <Text style={styles.textItem}>
+                      z: {chosenShape ? chosenShape.rotation.z : ""}
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -154,11 +283,29 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     marginRight: 10,
   },
+  textItem: {
+    marginHorizontal: 10,
+    marginVertical: 5,
+  },
+  vertex: {
+    backgroundColor: "#e7ff37",
+    margin: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
   backModal: {
     width: 42,
     height: 42,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
+  },
+  input: {
+    marginRight: 10,
+    width: width * 0.15,
+    borderBottomColor: "#8a8a8a",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    fontSize: 15,
   },
 });

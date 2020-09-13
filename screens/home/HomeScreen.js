@@ -109,7 +109,7 @@ export const AnimatedObjectList = ({
 };
 const HomeScreen = () => {
   return (
-    <SafeAreaView style={{marginTop: 20}}>
+    <SafeAreaView>
       <AnimatedObjectList
         data={cards}
         cardW={CARD_WIDTH}

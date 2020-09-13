@@ -205,6 +205,7 @@ function LayoutSetup(props) {
       props.basicComponents.points == null ? [] : props.basicComponents.points;
     props.reduxSetPoint([...listOfObjects, ...holder]);
     updatePoints();
+    return listOfObjects;
   };
 
   const onContextCreate = ({ gl, width, height, scale }) => {
@@ -289,6 +290,8 @@ function LayoutSetup(props) {
       //wrapper.add(mesh, line);
       scene.add(mesh, line);
 
+      const holder = loadFont(getVerticesWithText(mesh, props.initShape));
+      //console.log(holder)
       props.reduxSetShape([
         {
           object: mesh,
@@ -297,10 +300,12 @@ function LayoutSetup(props) {
           name: "default",
           type: props.initShape,
           id: 0,
+          position: new THREE.Vector3(0, 0, 0),
+          rotation: new THREE.Vector3(0, 0, 0),
+          points: holder,
         },
       ]);
       props.getShapesCallback(props.basicComponents.shapes);
-      loadFont(getVerticesWithText(mesh, props.initShape));
     }
   };
 
@@ -389,7 +394,7 @@ function LayoutSetup(props) {
       <TouchableOpacity
         style={{
           backgroundColor: "black",
-          top: 32,
+          top: 20,
           right: 90,
           position: "absolute",
           paddingVertical: 5,
@@ -414,7 +419,7 @@ function LayoutSetup(props) {
       <TouchableOpacity
         style={{
           backgroundColor: "black",
-          top: 32,
+          top: 20,
           right: 20,
           position: "absolute",
           paddingVertical: 5,

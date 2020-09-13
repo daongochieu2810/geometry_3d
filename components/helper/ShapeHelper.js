@@ -31,7 +31,6 @@ export const getVerticesWithText = (mesh, type) => {
   }
   let listOfVerticesWithText = [];
   let positions = mesh.geometry.attributes.position.array;
-  var listOfChars = ["A", "B", "D", "C", "A'", "B'", "D'", "C'"];
   var numSkip = 3;
   var pointHolder = null;
   if (type === "sphere") {
@@ -62,7 +61,7 @@ export const getVerticesWithText = (mesh, type) => {
       //listOfVertices.push(point);
       listOfVerticesWithText.push({
         point: point,
-        text: listOfChars[i],
+        text: i.toString(),
       });
     }
   }

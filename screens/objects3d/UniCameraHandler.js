@@ -1,10 +1,9 @@
 export default class UniCameraHandler {
-  constructor(camera) {
+  constructor(camera, baseDistance = 0) {
     this.camera = camera;
-    //this.mesh = mesh;
-
     this.PI_HALF = Math.PI / 2;
-    this.distance = 10;
+    this.baseDistance = baseDistance / 3;
+    this.distance = 10 + this.baseDistance;
     this.distanceTarget = 10;
     this.prevDist = 0;
     this.camera.position.z = this.distance;
@@ -92,7 +91,8 @@ export default class UniCameraHandler {
     this.rotation.x += (this.target.x - this.rotation.x) * 0.1;
     this.rotation.y += (this.target.y - this.rotation.y) * 0.1;
 
-    this.distance += (this.distanceTarget - this.distance) * 0.3;
+    if (this.baseDistance == 0)
+      this.distance += (this.distanceTarget - this.distance) * 0.3;
 
     this.camera.position.x =
       this.distance * Math.sin(this.rotation.x) * Math.cos(this.rotation.y);
