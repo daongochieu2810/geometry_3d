@@ -29,9 +29,8 @@ function SingleShapeView(props) {
   const [camera, setCamera] = useState(null);
   const [scene, setScene] = useState(null);*/
   useEffect(() => {
-    console.log("change");
-  },[points]);
-
+    console.log("changes");
+  }, [shape]);
   let clonePoints = points
     ? points.map((item) => {
         return {
