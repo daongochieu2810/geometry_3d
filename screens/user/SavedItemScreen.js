@@ -162,7 +162,7 @@ function SavedItemScreen(props) {
 
     };
   return isLoading ? (<View><Spinner visible={true}/></View>) :(
-    <SafeAreaView style={{marginTop: 30, marginHorizontal: 20}}>
+    <SafeAreaView style={{marginTop: 10, marginHorizontal: 20}}>
       <View
         style={{
           flexDirection: "row",

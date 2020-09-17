@@ -31,7 +31,7 @@ function AccountScreen(props) {
   return (
     <SafeAreaView style={styles.container}>
         {currUser ?
-            <><View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 30 }}>
+            <><View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
         <Text style={{ fontSize: 20 }}>Personal account</Text>
         <TouchableOpacity
           style={{

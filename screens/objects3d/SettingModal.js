@@ -15,6 +15,7 @@ import { connect } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 const icons = {
   cube: require("../../assets/cube.png"),
+  box: require("../../assets/cube.png"),
   custom: require("../../assets/misc_shapes.png"),
   octahedron: require("../../assets/octahedron.png"),
   cone: require("../../assets/cone.png"),
@@ -22,7 +23,7 @@ const icons = {
   prism: require("../../assets/prism.png"),
 };
 import SingleShapeView from "./SingleShapeView";
-import {loadTextVertex} from '../../components/helper/PointHelper';
+import { loadTextVertex } from "../../components/helper/PointHelper";
 
 const mapDispatchToProps = (dispatch) => {
   return {};
@@ -40,6 +41,9 @@ function SettingScreen(props) {
   const [chosenShape, setChosenShape] = useState(null);
   const [chosenPoint, setChosenPoint] = useState(null);
   const [currentName, setCurrentName] = useState("");
+  const [oldText, setOldText] = useState("");
+  const [newTextGeo, setNewTextGeo] = useState(null);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flexDirection: "row" }}>
@@ -122,7 +126,7 @@ function SettingScreen(props) {
                   marginTop: 15,
                   flexDirection: "row",
                   paddingVertical: 5,
-                  justifyContent: "space-around"
+                  justifyContent: "space-around",
                 }}
               >
                 <TouchableOpacity
@@ -144,18 +148,25 @@ function SettingScreen(props) {
                     paddingVertical: 5,
                   }}
                   onPress={() => {
+                    const _oldText = chosenPoint.trueText;
+                    setOldText(() => _oldText);
                     chosenPoint.trueText = currentName;
-                    const oldTextGeo = chosenPoint.text;
-                    props.basicComponents.scene.remove(oldTextGeo);
-                    const newTextGeo = loadTextVertex(chosenPoint);
-                    chosenPoint.text = newTextGeo;
-                    props.basicComponents.scene.add(newTextGeo);
-                    props.basicComponents.points.map(item => {
-                      if( item === oldTextGeo ) {
-                        return newTextGeo;
+                    const _oldTextGeo = chosenPoint.text;
+                    props.basicComponents.scene.remove(_oldTextGeo);
+                    const _newTextGeo = loadTextVertex(chosenPoint);
+                    chosenPoint.text = _newTextGeo;
+                    props.basicComponents.scene.add(_newTextGeo);
+                    props.basicComponents.points.map((item) => {
+                      if (item.trueText === _oldText) {
+                        return {
+                          ...item,
+                          trueText: currentName,
+                          text: _newTextGeo,
+                        };
                       }
                       return item;
-                    })
+                    });
+                    setNewTextGeo(() => _newTextGeo);
                     setChosenPoint(() => null);
                   }}
                 >
@@ -179,6 +190,10 @@ function SettingScreen(props) {
             style={styles.backModal}
             onPress={() => {
               setShowShapeModal(() => false);
+              setNewTextGeo(() => null);
+              setOldText(() => "");
+              setChosenPoint(() => null);
+              setChosenShape(() => null);
             }}
           >
             <Ionicons name="ios-arrow-round-back" color="black" size={42} />
@@ -191,6 +206,9 @@ function SettingScreen(props) {
               shape={chosenShape ? chosenShape.object : null}
               edges={chosenShape ? chosenShape.edges : null}
               points={chosenShape ? chosenShape.points : null}
+              newText={currentName}
+              oldText={oldText}
+              newTextGeo={newTextGeo}
             />
             <View style={{ width: "50%", marginLeft: 5, paddingHorizontal: 5 }}>
               <Text style={{ marginBottom: 5 }}>Assign vertices</Text>

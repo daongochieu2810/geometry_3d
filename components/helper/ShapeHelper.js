@@ -2,10 +2,14 @@ import * as THREE from "three";
 import { ConvexBufferGeometry } from "three/examples/jsm/geometries/ConvexGeometry";
 const raw_font = require("../../assets/fonts/bebas_neue.typeface");
 const font = new THREE.Font(raw_font);
-export const getVerticesWithText = (mesh, type) => {
+export const getVerticesWithText = (mesh, type, position) => {
   var numVertices = 0;
   switch (type) {
     case "cube": {
+      numVertices = 8;
+      break;
+    }
+    case "box": {
       numVertices = 8;
       break;
     }
@@ -35,16 +39,22 @@ export const getVerticesWithText = (mesh, type) => {
   var pointHolder = null;
   if (type === "sphere") {
     listOfVerticesWithText.push({
-      point: new THREE.Vector3(0, 0, 0),
+      point: position ? position : new THREE.Vector3(0, 0, 0),
       text: "O",
     });
   } else {
     for (let i = 0; i < numVertices; i++) {
-      let point = new THREE.Vector3(
-        positions[i * numSkip],
-        positions[i * numSkip + 1],
-        positions[i * numSkip + 2]
-      );
+      //console.log(position)
+      let x = positions[i * numSkip];
+      let y = positions[i * numSkip + 1];
+      let z = positions[i * numSkip + 2];
+      if (position) {
+        x += parseFloat(position.x);
+        y += parseFloat(position.y);
+        z += parseFloat(position.z);
+      }
+      let point = new THREE.Vector3(x, y, z);
+      //console.log(point);
       if (type === "octahedron") {
         if (i === 2) point.x *= -1;
         if (i === 1) point.z *= -1;
@@ -98,7 +108,8 @@ const addBasicShapes = (
   rotation = null,
   color = null,
   points = null,
-  name
+  name,
+  updatePoints
 ) => {
   let geometry = null;
   let material = null;
@@ -167,6 +178,15 @@ const addBasicShapes = (
   if (position) {
     mesh.position.set(position.x, position.y, position.z);
     line.position.set(position.x, position.y, position.z);
+    /*let positions = mesh.geometry.attributes.position.array;
+    console.log(positions.length)
+    for(let index in positions) {
+      positions[index] += position.x;
+      positions[index + 1] += position.y;
+      positions[index + 2] += position.z;
+    }
+    mesh.geometry.attributes.position.needsUpdate = true;
+    */
   }
   if (rotation) {
     mesh.rotation.set(rotation.x, rotation.y, rotation.z);
@@ -176,6 +196,20 @@ const addBasicShapes = (
   wrapper.add(mesh, line);
   props.basicComponents.controls.addObject(wrapper);
   props.basicComponents.scene.add(wrapper);*/
+  const listOfVertices = getVerticesWithText(mesh, type, position);
+  const listOfTextGeo = [];
+  for (let vertext of listOfVertices) {
+    const textGeo = createTextGeoFromPosition(vertext.point, vertext.text);
+    props.basicComponents.scene.add(textGeo);
+    //console.log("added")
+    listOfTextGeo.push({
+      trueText: vertext.text,
+      position: vertext.point,
+      text: textGeo,
+    });
+  }
+  props.reduxSetPoint([...props.basicComponents.points, ...listOfTextGeo]);
+  updatePoints();
   props.basicComponents.scene.add(mesh, line);
   props.reduxAddShape({
     object: mesh,
@@ -186,10 +220,11 @@ const addBasicShapes = (
     id: props.basicComponents.shapes.length,
     rotation: rotation,
     position: position,
+    points: listOfTextGeo,
   });
   props.getShapesCallback(props.basicComponents.shapes);
 };
-export const addShapes = (props, shapes) => {
+export const addShapes = (props, shapes, updatePoints) => {
   for (let shape of shapes) {
     if (shape.item.type) {
       addBasicShapes(
@@ -200,7 +235,8 @@ export const addShapes = (props, shapes) => {
         shape.item.rotation,
         shape.item.color,
         shape.item.points,
-        shape.item.name
+        shape.item.name,
+        updatePoints
       );
     }
   }
@@ -239,12 +275,23 @@ export const loadSavedState = (props, scene, updatePoints) => {
   updatePoints();
   let shapesHolder = [];
   for (let shape of data.shapes) {
+    let shapePoints = [];
     const object = loader.parse(shape.object);
     const edges = drawEdgesFromGeo(
       object.geometry,
       shape.rotation,
       shape.position
     );
+    for (let point of shape.points) {
+      const vertex = point.position;
+      const text = createTextGeoFromPosition(vertex, point.trueText);
+      shapePoints.push({
+        text: text,
+        position: vertex,
+        trueText: point.trueText,
+      });
+      //scene.add(text);
+    }
     //const wrapper = new THREE.Object3D();
     //wrapper.add(object, edges);
     //props.basicComponents.controls.addObject(wrapper);
@@ -258,8 +305,9 @@ export const loadSavedState = (props, scene, updatePoints) => {
       id: shape.id,
       rotation: shape.rotation,
       position: shape.position,
+      points: shapePoints,
     });
   }
   props.reduxSetShape(shapesHolder);
   props.getShapesCallback(props.basicComponents.shapes);
-}
+};

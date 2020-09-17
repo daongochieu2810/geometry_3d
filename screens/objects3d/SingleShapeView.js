@@ -23,15 +23,11 @@ const mapStateToProps = (state) => {
 };
 export default connect(mapStateToProps, mapDispatchToProps)(SingleShapeView);
 function SingleShapeView(props) {
-  const { shape, edges, points } = props;
+  const { shape, edges, points, newText, oldText, newTextGeo } = props;
   /*const [cameraHandler, setCameraHandler] = useState(null);
   const [renderer, setRenderer] = useState(null);
   const [camera, setCamera] = useState(null);
   const [scene, setScene] = useState(null);*/
-  useEffect(() => {
-    console.log("change");
-  },[points]);
-
   let clonePoints = points
     ? points.map((item) => {
         return {
@@ -40,6 +36,31 @@ function SingleShapeView(props) {
         };
       })
     : [];
+  useEffect(() => {
+    //console.log(oldText);
+    const shapePosition = shape.position;
+    if (newText !== "" && oldText !== "" && newTextGeo) {
+      const { scene, cameraHandler } = props.singleShapeComponents;
+      for (let point of clonePoints) {
+        //console.log(point.trueText);
+        if (point.trueText === newText) {
+          //console.log("found");
+          const oldTexGeo = scene.getObjectByName(oldText);
+          scene.remove(oldTexGeo);
+          point.text = newTextGeo.clone();
+          scene.add(point.text);
+          let { x, y, z } = point.text.position;
+          point.text.position.set(
+            x - shapePosition.x,
+            y - shapePosition.y,
+            z - shapePosition.z
+          );
+          cameraHandler.addObjectsToTrack([point.text]);
+          break;
+        }
+      }
+    }
+  }, [newText, newTextGeo, oldText]);
 
   const _transformEvent = (event) => {
     event.preventDefault = event.preventDefault || (() => {});
@@ -83,24 +104,36 @@ function SingleShapeView(props) {
     onPanResponderTerminationRequest: () => true,
   });
   const fitCameraToObject = (camera, object) => {
-    let offset = 5;
+    let offset = 4;
 
     const boundingBox = new THREE.Box3();
 
     // get bounding box of object - this will be used to setup controls and camera
     boundingBox.setFromObject(object);
+
+    //const center = boundingBox.getCenter();
+
     const size = boundingBox.getSize();
+
     // get the max side of the bounding box (fits to width OR height as needed )
-    let maxDim = Math.max(size.x, size.y, size.z);
-    //console.log(maxDim);
+    const maxDim = Math.max(size.x, size.y, size.z);
     const fov = camera.fov * (Math.PI / 180);
     let cameraZ = Math.abs((maxDim / 4) * Math.tan(fov * 2));
 
     cameraZ *= offset; // zoom out a little so that objects don't fill the screen
+
+    camera.position.z = cameraZ;
+
+    const minZ = boundingBox.min.z;
+    const cameraToFarEdge = minZ < 0 ? -minZ + cameraZ : cameraZ - minZ;
+
+    camera.far = cameraToFarEdge * 3;
+    camera.updateProjectionMatrix();
     return cameraZ;
   };
 
   const onContextCreate = ({ gl, width, height, scale }) => {
+    console.log(points.length);
     let _renderer = new ExpoTHREE.Renderer({ gl });
     _renderer.setPixelRatio(scale);
     _renderer.setSize(width, height);
@@ -109,16 +142,27 @@ function SingleShapeView(props) {
 
     const cloneShape = shape.clone();
     const cloneEdges = edges.clone();
-    cloneShape.position.set(0, 0, 0);
-    cloneEdges.position.set(0, 0, 0);
     let _scene = new THREE.Scene();
     let _camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 10000);
     const baseDistance = fitCameraToObject(_camera, cloneShape);
     let _cameraHandler = new UniCameraHandler(_camera, baseDistance);
-    _scene.add(cloneShape, cloneEdges);
     for (let point of clonePoints) {
-      _scene.add(point.text);
+      const textGeo = point.text;
+      textGeo.name = point.trueText;
+      let { x, y, z } = textGeo.position;
+      let shapePosition = cloneShape.position;
+      //console.log(cloneShape.position);
+      textGeo.position.set(
+        x - shapePosition.x,
+        y - shapePosition.y,
+        z - shapePosition.z
+      );
+      //console.log(textGeo.position);
+      _scene.add(textGeo);
     }
+    cloneShape.position.set(0, 0, 0);
+    cloneEdges.position.set(0, 0, 0);
+    _scene.add(cloneShape, cloneEdges);
     props.reduxSetSingleShapeComponents({
       cameraHandler: _cameraHandler,
       camera: _camera,
