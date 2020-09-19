@@ -101,10 +101,11 @@ export const drawEdgesFromGeo = (geometry, rotation, position) => {
   return line;
 };
 function getCenterPoint(mesh) {
-  let geometry = mesh.geometry;
+  const meshClone = mesh.clone();
+  let geometry = meshClone.geometry;
   geometry.computeBoundingBox();
   let center = geometry.boundingBox.getCenter();
-  mesh.localToWorld(center);
+  meshClone.localToWorld(center);
   return center;
 }
 const addBasicShapes = (
@@ -302,7 +303,7 @@ export const loadSavedState = (props, scene, updatePoints) => {
     const edges = drawEdgesFromGeo(
       object.geometry,
       shape.rotation,
-      shape.position
+      shape.type === "custom" ? null : shape.position
     );
     for (let point of shape.points) {
       const vertex = point.position;
