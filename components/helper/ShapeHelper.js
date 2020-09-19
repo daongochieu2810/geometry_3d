@@ -228,7 +228,7 @@ const addBasicShapes = (
     id: props.basicComponents.shapes.length,
     rotation: rotation,
     position: position,
-    points: points ? points : listOfTextGeo,
+    points: listOfTextGeo,
   });
   props.getShapesCallback(props.basicComponents.shapes);
 };
