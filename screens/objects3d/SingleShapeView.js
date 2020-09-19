@@ -140,17 +140,19 @@ function SingleShapeView(props) {
     _renderer.setClearColor(0x000000, 1.0);
     //console.log(renderer.domElement)
 
+    let shapePosition = shape.position;
     const cloneShape = shape.clone();
     const cloneEdges = edges.clone();
+    cloneShape.position.set(0, 0, 0);
+    cloneEdges.position.set(0, 0, 0);
     let _scene = new THREE.Scene();
     let _camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 10000);
-    const baseDistance = fitCameraToObject(_camera, cloneShape);
+    const baseDistance = 10; //fitCameraToObject(_camera, cloneShape);
     let _cameraHandler = new UniCameraHandler(_camera, baseDistance);
     for (let point of clonePoints) {
       const textGeo = point.text;
       textGeo.name = point.trueText;
       let { x, y, z } = textGeo.position;
-      let shapePosition = cloneShape.position;
       //console.log(cloneShape.position);
       textGeo.position.set(
         x - shapePosition.x,
@@ -160,8 +162,8 @@ function SingleShapeView(props) {
       //console.log(textGeo.position);
       _scene.add(textGeo);
     }
-    cloneShape.position.set(0, 0, 0);
-    cloneEdges.position.set(0, 0, 0);
+    const axisHelper = new THREE.AxesHelper(200);
+    cloneShape.add(axisHelper);
     _scene.add(cloneShape, cloneEdges);
     props.reduxSetSingleShapeComponents({
       cameraHandler: _cameraHandler,

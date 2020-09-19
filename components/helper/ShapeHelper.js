@@ -100,6 +100,13 @@ export const drawEdgesFromGeo = (geometry, rotation, position) => {
   if (rotation) line.rotation.set(rotation.x, rotation.y, rotation.z);
   return line;
 };
+function getCenterPoint(mesh) {
+  let geometry = mesh.geometry;
+  geometry.computeBoundingBox();
+  let center = geometry.boundingBox.getCenter();
+  mesh.localToWorld(center);
+  return center;
+}
 const addBasicShapes = (
   props,
   type,
@@ -217,6 +224,13 @@ const addBasicShapes = (
     }
     props.reduxSetPoint([...props.basicComponents.points, ...listOfTextGeo]);
     updatePoints();
+  } else {
+    //TODO
+    /*for (let point of points) {
+      listOfTextGeo.push({
+      })
+    }*/
+    position = getCenterPoint(mesh);
   }
   props.basicComponents.scene.add(mesh, line);
   props.reduxAddShape({
