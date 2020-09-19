@@ -129,7 +129,11 @@ const addBasicShapes = (
       break;
     }
     case "custom": {
+      points = points.map((item) => new THREE.Vector3(item.x, item.y, item.z));
+      //console.log("pass1");
+
       geometry = new ConvexBufferGeometry(points);
+      //console.log("pass2");
       material = new THREE.MeshBasicMaterial({
         color: color ? new THREE.Color(color) : 0xe7ff37,
         opacity: 0.5,
@@ -170,7 +174,9 @@ const addBasicShapes = (
   }
 
   let mesh = new THREE.Mesh(geometry, material);
+  //console.log("pass3");
   let edges = new THREE.EdgesGeometry(geometry);
+  //console.log("pass4");
   let line = new THREE.LineSegments(
     edges,
     new THREE.LineBasicMaterial({ color: 0xffffff })
@@ -196,20 +202,22 @@ const addBasicShapes = (
   wrapper.add(mesh, line);
   props.basicComponents.controls.addObject(wrapper);
   props.basicComponents.scene.add(wrapper);*/
-  const listOfVertices = getVerticesWithText(mesh, type, position);
   const listOfTextGeo = [];
-  for (let vertext of listOfVertices) {
-    const textGeo = createTextGeoFromPosition(vertext.point, vertext.text);
-    props.basicComponents.scene.add(textGeo);
-    //console.log("added")
-    listOfTextGeo.push({
-      trueText: vertext.text,
-      position: vertext.point,
-      text: textGeo,
-    });
+  if (type !== "custom") {
+    const listOfVertices = getVerticesWithText(mesh, type, position);
+    for (let vertext of listOfVertices) {
+      const textGeo = createTextGeoFromPosition(vertext.point, vertext.text);
+      props.basicComponents.scene.add(textGeo);
+      //console.log("added")
+      listOfTextGeo.push({
+        trueText: vertext.text,
+        position: vertext.point,
+        text: textGeo,
+      });
+    }
+    props.reduxSetPoint([...props.basicComponents.points, ...listOfTextGeo]);
+    updatePoints();
   }
-  props.reduxSetPoint([...props.basicComponents.points, ...listOfTextGeo]);
-  updatePoints();
   props.basicComponents.scene.add(mesh, line);
   props.reduxAddShape({
     object: mesh,
@@ -220,7 +228,7 @@ const addBasicShapes = (
     id: props.basicComponents.shapes.length,
     rotation: rotation,
     position: position,
-    points: listOfTextGeo,
+    points: points ? points : listOfTextGeo,
   });
   props.getShapesCallback(props.basicComponents.shapes);
 };
