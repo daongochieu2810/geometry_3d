@@ -91,6 +91,7 @@ function AccountScreen(props) {
             style={{
               fontSize: 15,
               margin: 5,
+              marginBottom: 10
             }}
           >
             Useful Materials

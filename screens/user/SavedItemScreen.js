@@ -144,7 +144,7 @@ function SavedItemScreen(props) {
                     setIsLoading(() => false);
                 }
             }).catch(e => {
-                console.log(e);
+                //console.log(e);
                 counter++;
                 if(counter === _saveItems.length) {
                     Toast.show({
@@ -191,7 +191,7 @@ function SavedItemScreen(props) {
       <FlatList
         style={{
           marginTop: 10,
-            maxHeight: SCREEN_HEIGHT / 1.7
+            maxHeight: SCREEN_HEIGHT / 1.6
         }}
         keyboardShouldPersistTaps={'handled'}
         showsVerticalScrollIndicator={false}
