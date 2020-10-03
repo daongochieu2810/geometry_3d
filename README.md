@@ -15,6 +15,16 @@ ExpoGL.View was used as the container for three-js objects.
 # Demo
 ![demo](./demo.gif)
 
+# Big features under development
+1. Geometry feed:
+    - Users can share 3D Scene or post discussions
+    - Users can create private/public communities
+    ![geoFeed](./assets/feed.jpg)
+
+
+
+
+
 # Todos
 1. Add more geometry-related features i.e draw perpendicular and parallel line, mark lines' intersections,...
 2. Allow users to draw shapes instead of filling in coordinates
