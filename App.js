@@ -5,14 +5,16 @@ import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { enableScreens } from "react-native-screens";
-import CustomTabBar from "./components/common/CustomTabBar";
 
 import HomeScreen from "./screens/home/HomeScreen";
 import LoadingScreen from "./screens/LoadingScreen";
 import SavedItemScreen from "./screens/user/SavedItemScreen";
 import AccountScreen from "./screens/user/AccountScreen";
 
-import FeedScreen from "./screens/community/feed/FeedScreen";
+/**
+ * Under development
+ */
+//import FeedScreen from "./screens/community/feed/FeedScreen";
 
 import CubeScreen from "./screens/cube/CubeScreen";
 import PrismScreen from "./screens/prism/PrismScreen";
@@ -51,14 +53,14 @@ const AppBottomNavigator = createBottomTabNavigator(
         ),
       },
     },
-    Feed: {
+    /* Feed: {
       screen: FeedScreen,
       navigationOptions: {
         tabBarIcon: ({ tintColor }) => (
           <Ionicons name="ios-globe" size={24} color={tintColor} />
         ),
       },
-    },
+    },*/
     Items: {
       screen: SavedItemScreen,
       navigationOptions: {
