@@ -35,6 +35,7 @@ export const getVerticesWithText = (mesh, type, position) => {
   }
   let listOfVerticesWithText = [];
   let positions = mesh.geometry.attributes.position.array;
+
   var numSkip = 3;
   var pointHolder = null;
   if (type === "sphere") {
@@ -108,6 +109,15 @@ function getCenterPoint(mesh) {
   meshClone.localToWorld(center);
   return center;
 }
+function rotateAboutPoint(obj, point, axis, theta) {
+  obj.position.sub(point);
+  obj.position.applyAxisAngle(axis, theta);
+  obj.position.add(point);
+  obj.rotateOnAxis(axis, theta);
+  obj.geometry.attributes.needsUpdate = true;
+  return obj;
+}
+
 const addBasicShapes = (
   props,
   type,
@@ -203,8 +213,16 @@ const addBasicShapes = (
     */
   }
   if (rotation) {
-    mesh.rotation.set(rotation.x, rotation.y, rotation.z);
-    line.rotation.set(rotation.x, rotation.y, rotation.z);
+    //mesh.rotation.set(rotation.x, rotation.y, rotation.z);
+    //line.rotation.set(rotation.x, rotation.y, rotation.z);
+    rotateAboutPoint(mesh, position, new THREE.Vector3(1, 0, 0), rotation.x);
+    rotateAboutPoint(mesh, position, new THREE.Vector3(0, 1, 0), rotation.y);
+    rotateAboutPoint(mesh, position, new THREE.Vector3(0, 0, 1), rotation.z);
+
+    rotateAboutPoint(line, position, new THREE.Vector3(1, 0, 0), rotation.x);
+    rotateAboutPoint(line, position, new THREE.Vector3(0, 1, 0), rotation.y);
+    rotateAboutPoint(line, position, new THREE.Vector3(0, 0, 1), rotation.z);
+  
   }
   /*const wrapper = new THREE.Object3D();
   wrapper.add(mesh, line);
