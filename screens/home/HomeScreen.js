@@ -1,8 +1,21 @@
-import React, { useRef, useContext } from "react";
-import { Animated, Dimensions, FlatList, View, Text , SafeAreaView} from "react-native";
+import React, { useRef } from "react";
+import Constants from "expo-constants";
+import { AdMobBanner } from "expo-ads-admob";
+import {
+  Animated,
+  Dimensions,
+  FlatList,
+  View,
+  Text,
+  SafeAreaView,
+} from "react-native";
 import AnimatedCard from "../../components/common/AnimatedCard";
 import CardContext from "../../components/contexts/CardContext";
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+const testID = "ca-app-pub-3940256099942544/6300978111";
+const productionId = "ca-app-pub-9056614169465722/2246425208";
+const adUnitID = Constants.isDevice && !__DEV__ ? productionId : testID;
+
 const useLazyRef = (initializer) => {
   const ref = useRef();
   if (ref.current === undefined) {
@@ -80,8 +93,9 @@ export const AnimatedObjectList = ({
       {...{ onScroll }}
       data={data}
       style={{
-        marginTop: isHorizontal ? 0 : 20,
+        marginTop: isHorizontal ? 0 : 5,
         marginHorizontal: 5,
+        marginBottom: 60,
       }}
       horizontal={isHorizontal}
       renderItem={({ index, item: { name, pic, path } }) => (
@@ -110,6 +124,15 @@ export const AnimatedObjectList = ({
 const HomeScreen = () => {
   return (
     <SafeAreaView>
+      <AdMobBanner
+        bannerSize="fullBanner"
+        adUnitID={adUnitID} // Test ID, Replace with your-admob-unit-id
+        servePersonalizedAds={true} // true or false
+        onDidFailToReceiveAdWithError={() => {
+          console.log("CANT");
+        }}
+      />
+
       <AnimatedObjectList
         data={cards}
         cardW={CARD_WIDTH}

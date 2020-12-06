@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { AdMobRewarded } from "expo-ads-admob";
+import Constants from "expo-constants";
 import {
   Text,
   View,
@@ -35,6 +37,9 @@ const useFulLinks = [
     text: "Formulas",
   },
 ];
+const testID = "ca-app-pub-3940256099942544/5224354917";
+const productionId = "ca-app-pub-9056614169465722/1883463129";
+const adUnitID = Constants.isDevice && !__DEV__ ? productionId : testID;
 const mapDispatchToProps = (dispatch) => {
   return {
     reduxSetSaveItem: (items) => {
@@ -59,6 +64,14 @@ export default connect(mapStateToProps, mapDispatchToProps)(AccountScreen);
 function AccountScreen(props) {
   const navigation = useNavigation();
   const [currUser, setCurrUser] = useState(fb.auth.currentUser);
+  useEffect(() => {
+    AdMobRewarded.setAdUnitID(adUnitID).then(() => {
+      AdMobRewarded.requestAdAsync();
+    });
+  }, [props]);
+  const showRewarded = async () => {
+    await AdMobRewarded.showAdAsync();
+  };
   return (
     <SafeAreaView style={styles.container}>
       {currUser ? (
@@ -91,7 +104,7 @@ function AccountScreen(props) {
             style={{
               fontSize: 15,
               margin: 5,
-              marginBottom: 10
+              marginBottom: 10,
             }}
           >
             Useful Materials
@@ -141,6 +154,20 @@ function AccountScreen(props) {
           </TouchableOpacity>
         </View>
       )}
+      <TouchableOpacity
+        style={{
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+          alignSelf: "center",
+          borderRadius: 10,
+          backgroundColor: "#64ff59",
+        }}
+        onPress={() => {
+          showRewarded();
+        }}
+      >
+        <Text style={{ textAlign: "center" }}>Watch an Ad to support me!</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }

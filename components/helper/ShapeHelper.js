@@ -1,7 +1,11 @@
 import * as THREE from "three";
 import { ConvexBufferGeometry } from "three/examples/jsm/geometries/ConvexGeometry";
+import { Object3D, Vector2 } from "three";
 const raw_font = require("../../assets/fonts/bebas_neue.typeface");
 const font = new THREE.Font(raw_font);
+const xAxis = new THREE.Vector3(1, 0, 0);
+const yAxis = new THREE.Vector3(0, 1, 0);
+const zAxis = new THREE.Vector3(0, 0, 1);
 export const getVerticesWithText = (mesh, type, position) => {
   var numVertices = 0;
   switch (type) {
@@ -78,18 +82,37 @@ export const getVerticesWithText = (mesh, type, position) => {
   }
   return listOfVerticesWithText;
 };
-export const createTextGeoFromPosition = (vertex, trueText) => {
+export const createTextGeoFromPosition = (
+  vertex,
+  trueText,
+  rotation,
+  position
+) => {
   const textGeo = new THREE.TextGeometry(trueText, {
     font: font,
     size: 0.5,
     height: 0.01,
   });
+
   let textMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
   });
   let text = new THREE.Mesh(textGeo, textMaterial);
   text.position.set(vertex.x, vertex.y, vertex.z);
+  if (rotation) {
+    rotateByPoint(text, position, xAxis, rotation.x);
+    rotateByPoint(text, position, yAxis, rotation.y);
+    rotateByPoint(text, position, zAxis, rotation.z);
+  }
   return text;
+};
+const rotateByPoint = (obj, pivot, axis, theta) => {
+  obj.localToWorld(obj.position);
+  obj.position.sub(pivot); // remove the offset
+  obj.position.applyAxisAngle(axis, theta); // rotate the POSITION
+  obj.position.add(pivot); // re-add the offset
+  obj.worldToLocal(obj.position);
+  obj.rotateOnAxis(axis, theta); // rotate the OBJECT
 };
 export const drawEdgesFromGeo = (geometry, rotation, position) => {
   const edges = new THREE.EdgesGeometry(geometry);
@@ -109,14 +132,6 @@ function getCenterPoint(mesh) {
   meshClone.localToWorld(center);
   return center;
 }
-function rotateAboutPoint(obj, point, axis, theta) {
-  obj.position.sub(point);
-  obj.position.applyAxisAngle(axis, theta);
-  obj.position.add(point);
-  obj.rotateOnAxis(axis, theta);
-  obj.geometry.attributes.needsUpdate = true;
-  return obj;
-}
 
 const addBasicShapes = (
   props,
@@ -131,6 +146,10 @@ const addBasicShapes = (
 ) => {
   let geometry = null;
   let material = null;
+  position.x = parseFloat(position.x);
+  position.y = parseFloat(position.y);
+  position.z = parseFloat(position.z);
+  position = new THREE.Vector3(position.x, position.y, position.z);
   switch (type) {
     case "box": {
       geometry = new THREE.BoxBufferGeometry(
@@ -202,37 +221,22 @@ const addBasicShapes = (
   if (position) {
     mesh.position.set(position.x, position.y, position.z);
     line.position.set(position.x, position.y, position.z);
-    /*let positions = mesh.geometry.attributes.position.array;
-    console.log(positions.length)
-    for(let index in positions) {
-      positions[index] += position.x;
-      positions[index + 1] += position.y;
-      positions[index + 2] += position.z;
-    }
-    mesh.geometry.attributes.position.needsUpdate = true;
-    */
   }
   if (rotation) {
-    //mesh.rotation.set(rotation.x, rotation.y, rotation.z);
-    //line.rotation.set(rotation.x, rotation.y, rotation.z);
-    rotateAboutPoint(mesh, position, new THREE.Vector3(1, 0, 0), rotation.x);
-    rotateAboutPoint(mesh, position, new THREE.Vector3(0, 1, 0), rotation.y);
-    rotateAboutPoint(mesh, position, new THREE.Vector3(0, 0, 1), rotation.z);
-
-    rotateAboutPoint(line, position, new THREE.Vector3(1, 0, 0), rotation.x);
-    rotateAboutPoint(line, position, new THREE.Vector3(0, 1, 0), rotation.y);
-    rotateAboutPoint(line, position, new THREE.Vector3(0, 0, 1), rotation.z);
-  
+    mesh.rotation.set(rotation.x, rotation.y, rotation.z);
+    line.rotation.set(rotation.x, rotation.y, rotation.z);
+    rotation = new THREE.Vector3(rotation.x, rotation.y, rotation.z);
   }
-  /*const wrapper = new THREE.Object3D();
-  wrapper.add(mesh, line);
-  props.basicComponents.controls.addObject(wrapper);
-  props.basicComponents.scene.add(wrapper);*/
   const listOfTextGeo = [];
   if (type !== "custom") {
     const listOfVertices = getVerticesWithText(mesh, type, position);
     for (let vertext of listOfVertices) {
-      const textGeo = createTextGeoFromPosition(vertext.point, vertext.text);
+      const textGeo = createTextGeoFromPosition(
+        vertext.point,
+        vertext.text,
+        rotation,
+        position
+      );
       props.basicComponents.scene.add(textGeo);
       //console.log("added")
       listOfTextGeo.push({
@@ -304,7 +308,7 @@ export const loadSavedState = (props, scene, updatePoints) => {
   let points = [];
   for (let point of data.points) {
     const vertex = point.position;
-    const text = createTextGeoFromPosition(vertex, point.trueText);
+    const text = createTextGeoFromPosition(vertex, point.trueText, null, null);
     points.push({
       text: text,
       position: vertex,
@@ -325,7 +329,12 @@ export const loadSavedState = (props, scene, updatePoints) => {
     );
     for (let point of shape.points) {
       const vertex = point.position;
-      const text = createTextGeoFromPosition(vertex, point.trueText);
+      const text = createTextGeoFromPosition(
+        vertex,
+        point.trueText,
+        shape.rotation,
+        shape.position
+      );
       shapePoints.push({
         text: text,
         position: vertex,

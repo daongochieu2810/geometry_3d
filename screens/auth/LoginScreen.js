@@ -69,7 +69,7 @@ function LoginScreen(props) {
             <TextInput
               style={styles.input}
               autoCapitalize="none"
-              onChangeText={(emailInput) => setEmail(() => emailInput)}
+              onChangeText={(emailInput) => setEmail(() => emailInput.trim())}
               value={email}
             ></TextInput>
           </View>
@@ -79,7 +79,7 @@ function LoginScreen(props) {
               style={styles.input}
               secureTextEntry
               autoCapitalize="none"
-              onChangeText={(passwordInput) => setPassword(() => passwordInput)}
+              onChangeText={(passwordInput) => setPassword(() => passwordInput.trim())}
               value={password}
             ></TextInput>
           </View>

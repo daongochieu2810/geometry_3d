@@ -55,15 +55,17 @@ function SettingScreen(props) {
         <Text style={{ fontSize: 18 }}>All shapes</Text>
         <FlatList
           style={styles.flatList}
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
           keyExtractor={({ index, item }) => {
             return index + "shape";
           }}
           data={props.basicComponents.shapes}
-          renderItem={({ item }) => (
+          numColumns={2}
+          renderItem={({ item, index }) => (
             <TouchableOpacity
-              style={{ ...styles.touchableItem }}
+              style={{
+                ...styles.touchableItem,
+              }}
               onPress={() => {
                 setChosenShape(() => item);
                 setShowShapeModal(() => true);
@@ -286,20 +288,23 @@ function SettingScreen(props) {
 }
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
+    marginBottom: 50,
     flex: 1,
   },
   section: {
     marginTop: 10,
   },
   flatList: {
-    paddingVertical: 10,
+    paddingVertical: 5,
+    marginBottom: 10
   },
   touchableItem: {
     borderRadius: 5,
     paddingTop: 5,
     borderWidth: StyleSheet.hairlineWidth,
-    marginRight: 10,
+    margin: 10,
+    width: width / 2.5,
   },
   textItem: {
     marginHorizontal: 10,

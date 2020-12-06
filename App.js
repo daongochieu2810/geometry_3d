@@ -11,11 +11,6 @@ import LoadingScreen from "./screens/LoadingScreen";
 import SavedItemScreen from "./screens/user/SavedItemScreen";
 import AccountScreen from "./screens/user/AccountScreen";
 
-/**
- * Under development
- */
-//import FeedScreen from "./screens/community/feed/FeedScreen";
-
 import CubeScreen from "./screens/cube/CubeScreen";
 import PrismScreen from "./screens/prism/PrismScreen";
 import SphereScreen from "./screens/sphere/SphereScreen";
@@ -53,14 +48,6 @@ const AppBottomNavigator = createBottomTabNavigator(
         ),
       },
     },
-    /* Feed: {
-      screen: FeedScreen,
-      navigationOptions: {
-        tabBarIcon: ({ tintColor }) => (
-          <Ionicons name="ios-globe" size={24} color={tintColor} />
-        ),
-      },
-    },*/
     Items: {
       screen: SavedItemScreen,
       navigationOptions: {
