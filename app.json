@@ -14,15 +14,16 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "bundleIdentifier": "com.dnh2810.geometry3D",
+      "bundleIdentifier": "com.dnh28102001.geometry3D",
       "buildNumber": "1.0.0"
     },
     "android": {
-      "package": "com.dnh2810.geometry3D",
-      "versionCode": 1,
+      "package": "com.dnh28102001.geometry3D",
+      "versionCode": 2,
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-9056614169465722~3443940897"
-      }
+      },
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/favicon.png"
