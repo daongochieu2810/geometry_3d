@@ -1,5 +1,7 @@
 # geometry_3d
 
+![Free download from Google PlayStore](https://play.google.com/store/apps/details?id=com.dnh28102001.geometry3D)
+
 A visualisation tool for 3d geometry and modeling
 
 To run the app: `git clone` the repo, then `yarn install` and `expo start`

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Geometry 3D",
     "slug": "geometry_3d",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/cube.png",
     "splash": {
@@ -19,7 +19,7 @@
     },
     "android": {
       "package": "com.dnh28102001.geometry3D",
-      "versionCode": 2,
+      "versionCode": 3,
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-9056614169465722~3443940897"
       },
