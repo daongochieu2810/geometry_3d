@@ -14,6 +14,7 @@ import {
   Image,
 } from "react-native";
 import fb from "../../backend";
+import Toast from 'react-native-toast-message';
 import { useNavigation } from "react-navigation-hooks";
 import { connect } from "react-redux";
 import actions from "../../actions";
@@ -54,7 +55,6 @@ const mapStateToProps = (state) => {
   return {
     saveComponents: state.saveComponents,
     miscData: state.miscData,
-    // basicComponents: state.basicComponents
   };
 };
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -66,11 +66,33 @@ function AccountScreen(props) {
   const [currUser, setCurrUser] = useState(fb.auth.currentUser);
   useEffect(() => {
     AdMobRewarded.setAdUnitID(adUnitID).then(() => {
-      AdMobRewarded.requestAdAsync();
+      try {
+        AdMobRewarded.requestAdAsync();
+      } catch (e) {
+        Toast.show({
+          type: "error",
+          position: "top",
+          text1: "Error",
+          text2: e.message,
+          visibilityTime: 2000,
+          autoHide: true,
+        });
+      }
     });
   }, [props]);
   const showRewarded = async () => {
-    await AdMobRewarded.showAdAsync();
+    try {
+      await AdMobRewarded.showAdAsync();
+    } catch (e) {
+      Toast.show({
+        type: "error",
+        position: "top",
+        text1: "Error",
+        text2: e.message,
+        visibilityTime: 2000,
+        autoHide: true,
+      });
+    }
   };
   return (
     <SafeAreaView style={styles.container}>

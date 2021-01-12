@@ -9,13 +9,14 @@ import {
   BackHandler,
   SafeAreaView,
   Modal,
+  ScrollView,
 } from "react-native";
 
 import { useNavigation } from "react-navigation-hooks";
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationActions } from "react-navigation";
 import * as THREE from "three";
-import BottomDrawer from "rn-bottom-drawer";
+import { FloatingAction } from "react-native-floating-action";
 import LayoutSetup from "./objects3d/LayoutSetup";
 import Dialog, {
   SlideAnimation,
@@ -96,10 +97,58 @@ export default function BaseLayoutScreen(props) {
     //console.log(pointsToEdit.length);
     setPointsEdit(() => pointsToEdit);
   };
-  const cards = [
+  const actions = [
     {
-      index: 0,
-      name: "Add points",
+      text: "Add points",
+      icon: require("../assets/cube.png"),
+      name: "add_points",
+      position: 1,
+    },
+    {
+      text: "Remove points",
+      icon: require("../assets/sphere.png"),
+      name: "remove_points",
+      position: 2,
+    },
+    {
+      text: "Connect points",
+      icon: require("../assets/cone.png"),
+      name: "connect_points",
+      position: 3,
+    },
+    {
+      text: "Disconnect points",
+      icon: require("../assets/octahedron.png"),
+      name: "disconnect_points",
+      position: 4,
+    },
+    {
+      text: "Add shapes",
+      icon: require("../assets/add_shape.png"),
+      name: "add_shapes",
+      position: 5,
+    },
+    {
+      text: "Remove shapes",
+      icon: require("../assets/more.png"),
+      name: "remove_shapes",
+      position: 6,
+    },
+    {
+      text: "Settings",
+      icon: require("../assets/misc_shapes.png"),
+      name: "settings",
+      position: 7,
+    },
+    {
+      text: "Advanced settings",
+      icon: require("../assets/connect_points.png"),
+      name: "advanced_settings",
+      position: 8,
+    },
+  ];
+  const cards = {
+    add_points: {
       component: (
         <EditPoints
           isAdd={true}
@@ -109,9 +158,7 @@ export default function BaseLayoutScreen(props) {
       ),
       action: "add_points",
     },
-    {
-      index: 1,
-      name: "Remove points",
+    remove_points: {
       component: (
         <EditPoints
           isAdd={false}
@@ -121,9 +168,7 @@ export default function BaseLayoutScreen(props) {
       ),
       action: "remove_points",
     },
-    {
-      index: 2,
-      name: "Connect Points",
+    connect_points: {
       component: (
         <ControlPoints
           connect={true}
@@ -133,9 +178,7 @@ export default function BaseLayoutScreen(props) {
       ),
       action: "connect_points",
     },
-    {
-      index: 3,
-      name: "Disconnect Points",
+    disconnect_points: {
       component: (
         <ControlPoints
           connect={false}
@@ -145,9 +188,7 @@ export default function BaseLayoutScreen(props) {
       ),
       action: "disconnect_points",
     },
-    {
-      index: 4,
-      name: "Add Shapes",
+    add_shapes: {
       component: (
         <ControlShapes
           add={true}
@@ -158,9 +199,7 @@ export default function BaseLayoutScreen(props) {
       ),
       action: "add_shapes",
     },
-    {
-      index: 5,
-      name: "Remove Shapes",
+    remove_shapes: {
       component: (
         <ControlShapes
           add={false}
@@ -171,9 +210,7 @@ export default function BaseLayoutScreen(props) {
       ),
       action: "remove_shapes",
     },
-    {
-      index: 6,
-      name: "Camera Settings",
+    settings: {
       component: (
         <CameraSettings
           existingShapes={currShapes ? currShapes : []}
@@ -182,13 +219,11 @@ export default function BaseLayoutScreen(props) {
       ),
       action: "settings",
     },
-    {
-      index: 7,
-      name: "Advanced Settings",
+    advanced_settings: {
       component: null,
       action: "advanced_settings",
     },
-  ];
+  };
   const onPointsEditPopUpDone = () => {
     if (pointsEdit.length > 0) {
       setSignalEditPoints(() => !signalEditPoints);
@@ -386,83 +421,33 @@ export default function BaseLayoutScreen(props) {
           <SettingModal currShapes={currShapes} currPoints={currPoints} />
         </View>
       </Modal>
-      <BottomDrawer
-        containerHeight={SCREEN_HEIGHT / 5}
-        offset={SCREEN_HEIGHT / 20}
-        startUp={false}
-        downDisplay={SCREEN_HEIGHT / 6.5}
-      >
-        <View
-          style={{
-            flex: 1,
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          <Text
-            style={{
-              textAlign: "center",
-              height: SCREEN_HEIGHT / 18,
-              textAlignVertical: "center",
-            }}
-          >
-            Tools
-          </Text>
-          <FlatList
-            style={{
-              marginHorizontal: 10,
-              marginVertical: 5,
-            }}
-            horizontal={true}
-            keyboardShouldPersistTaps="handled"
-            keyExtractor={(item, index) => `${index} bottom drawer`}
-            showsHorizontalScrollIndicator={false}
-            data={cards}
-            renderItem={({ index, item }) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  alignContent: "center",
-                  justifyContent: "center",
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
-                  borderColor: "black",
-                  borderWidth: 1,
-                  borderRadius: 10,
-                  margin: 5,
-                }}
-                onPress={() => {
-                  if (item.action === "settings") {
-                  } else if (
-                    item.action === "add_shapes" ||
-                    item.action === "remove_shapes"
-                  ) {
-                    setIsFromShape(() => true);
-                  } else {
-                    setIsFromShape(() => false);
-                  }
-                  if (item.action === "advanced_settings") {
-                    setShowSettings(() => true);
-                    return;
-                  }
-                  setVisible(true);
-                  setPointsConnect(() => []);
-                  setAction(() => item.action);
-                  setPopUpComp(item.component);
-                }}
-              >
-                <Text
-                  style={{
-                    color: "black",
-                  }}
-                >
-                  {item.name}
-                </Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </BottomDrawer>
+      <FloatingAction
+        actions={actions}
+        distanceToEdge={20}
+        buttonSize={56}
+        actionsPaddingTopBottom={0}
+        dismissKeyboardOnPress={true}
+        onPressItem={(name) => {
+          const item = cards[name];
+          if (item.action === "settings") {
+          } else if (
+            item.action === "add_shapes" ||
+            item.action === "remove_shapes"
+          ) {
+            setIsFromShape(() => true);
+          } else {
+            setIsFromShape(() => false);
+          }
+          if (item.action === "advanced_settings") {
+            setShowSettings(() => true);
+            return;
+          }
+          setVisible(true);
+          setPointsConnect(() => []);
+          setAction(() => item.action);
+          setPopUpComp(item.component);
+        }}
+      />
     </SafeAreaView>
   );
 }
