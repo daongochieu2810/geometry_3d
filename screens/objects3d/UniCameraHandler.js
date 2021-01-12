@@ -2,9 +2,9 @@ export default class UniCameraHandler {
   constructor(camera, baseDistance = 0) {
     this.camera = camera;
     this.PI_HALF = Math.PI / 2;
-    this.baseDistance = baseDistance / 3;
-    this.distance = 10 + this.baseDistance;
-    this.distanceTarget = 10;
+    //this.baseDistance = baseDistance;
+    this.distance = 10;
+    this.distanceTarget = baseDistance === 0 ? 10 : baseDistance;
     this.prevDist = 0;
     this.camera.position.z = this.distance;
     this.currentCenter = { x: 0, y: 0, z: 0 };
@@ -18,6 +18,8 @@ export default class UniCameraHandler {
 
     this.target = { x: (Math.PI * 3) / 2, y: Math.PI / 6.0 };
     this.targetOnDown = { x: 0, y: 0 };
+
+    this.listOfObjects = [];
   }
 
   handlePanResponderGrant = (event) => {
@@ -75,6 +77,11 @@ export default class UniCameraHandler {
   setSensitivity = (num) => {
     this.sensitivity = num;
   };
+  addObjectsToTrack = (objects) => {
+    for (let object of objects) {
+      this.listOfObjects.push(object);
+    }
+  };
 
   zoom = (delta) => {
     const zoomMin = 2;
@@ -90,9 +97,7 @@ export default class UniCameraHandler {
   render(listOfObject) {
     this.rotation.x += (this.target.x - this.rotation.x) * 0.1;
     this.rotation.y += (this.target.y - this.rotation.y) * 0.1;
-
-    if (this.baseDistance == 0)
-      this.distance += (this.distanceTarget - this.distance) * 0.3;
+    this.distance += (this.distanceTarget - this.distance) * 0.3;
 
     this.camera.position.x =
       this.distance * Math.sin(this.rotation.x) * Math.cos(this.rotation.y);
@@ -110,6 +115,9 @@ export default class UniCameraHandler {
       //const line = verticeObject.line;
       text.quaternion.copy(this.camera.quaternion);
       //line.quaternion.copy(this.camera.quaternion);
+    }
+    for (let object of this.listOfObjects) {
+      object.quaternion.copy(this.camera.quaternion);
     }
   }
 }

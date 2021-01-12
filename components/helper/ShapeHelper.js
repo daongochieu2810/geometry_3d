@@ -1,11 +1,19 @@
 import * as THREE from "three";
 import { ConvexBufferGeometry } from "three/examples/jsm/geometries/ConvexGeometry";
+import { Object3D, Vector2 } from "three";
 const raw_font = require("../../assets/fonts/bebas_neue.typeface");
 const font = new THREE.Font(raw_font);
-export const getVerticesWithText = (mesh, type) => {
+const xAxis = new THREE.Vector3(1, 0, 0);
+const yAxis = new THREE.Vector3(0, 1, 0);
+const zAxis = new THREE.Vector3(0, 0, 1);
+export const getVerticesWithText = (mesh, type, position) => {
   var numVertices = 0;
   switch (type) {
     case "cube": {
+      numVertices = 8;
+      break;
+    }
+    case "box": {
       numVertices = 8;
       break;
     }
@@ -31,20 +39,27 @@ export const getVerticesWithText = (mesh, type) => {
   }
   let listOfVerticesWithText = [];
   let positions = mesh.geometry.attributes.position.array;
+
   var numSkip = 3;
   var pointHolder = null;
   if (type === "sphere") {
     listOfVerticesWithText.push({
-      point: new THREE.Vector3(0, 0, 0),
+      point: position ? position : new THREE.Vector3(0, 0, 0),
       text: "O",
     });
   } else {
     for (let i = 0; i < numVertices; i++) {
-      let point = new THREE.Vector3(
-        positions[i * numSkip],
-        positions[i * numSkip + 1],
-        positions[i * numSkip + 2]
-      );
+      //console.log(position)
+      let x = positions[i * numSkip];
+      let y = positions[i * numSkip + 1];
+      let z = positions[i * numSkip + 2];
+      if (position) {
+        x += parseFloat(position.x);
+        y += parseFloat(position.y);
+        z += parseFloat(position.z);
+      }
+      let point = new THREE.Vector3(x, y, z);
+      //console.log(point);
       if (type === "octahedron") {
         if (i === 2) point.x *= -1;
         if (i === 1) point.z *= -1;
@@ -67,18 +82,37 @@ export const getVerticesWithText = (mesh, type) => {
   }
   return listOfVerticesWithText;
 };
-export const createTextGeoFromPosition = (vertex, trueText) => {
+export const createTextGeoFromPosition = (
+  vertex,
+  trueText,
+  rotation,
+  position
+) => {
   const textGeo = new THREE.TextGeometry(trueText, {
     font: font,
     size: 0.5,
     height: 0.01,
   });
+
   let textMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
   });
   let text = new THREE.Mesh(textGeo, textMaterial);
   text.position.set(vertex.x, vertex.y, vertex.z);
+  if (rotation) {
+    rotateByPoint(text, position, xAxis, rotation.x);
+    rotateByPoint(text, position, yAxis, rotation.y);
+    rotateByPoint(text, position, zAxis, rotation.z);
+  }
   return text;
+};
+const rotateByPoint = (obj, pivot, axis, theta) => {
+  obj.localToWorld(obj.position);
+  obj.position.sub(pivot); // remove the offset
+  obj.position.applyAxisAngle(axis, theta); // rotate the POSITION
+  obj.position.add(pivot); // re-add the offset
+  obj.worldToLocal(obj.position);
+  obj.rotateOnAxis(axis, theta); // rotate the OBJECT
 };
 export const drawEdgesFromGeo = (geometry, rotation, position) => {
   const edges = new THREE.EdgesGeometry(geometry);
@@ -90,6 +124,15 @@ export const drawEdgesFromGeo = (geometry, rotation, position) => {
   if (rotation) line.rotation.set(rotation.x, rotation.y, rotation.z);
   return line;
 };
+function getCenterPoint(mesh) {
+  const meshClone = mesh.clone();
+  let geometry = meshClone.geometry;
+  geometry.computeBoundingBox();
+  let center = geometry.boundingBox.getCenter();
+  meshClone.localToWorld(center);
+  return center;
+}
+
 const addBasicShapes = (
   props,
   type,
@@ -98,10 +141,15 @@ const addBasicShapes = (
   rotation = null,
   color = null,
   points = null,
-  name
+  name,
+  updatePoints
 ) => {
   let geometry = null;
   let material = null;
+  position.x = parseFloat(position.x);
+  position.y = parseFloat(position.y);
+  position.z = parseFloat(position.z);
+  position = new THREE.Vector3(position.x, position.y, position.z);
   switch (type) {
     case "box": {
       geometry = new THREE.BoxBufferGeometry(
@@ -118,7 +166,11 @@ const addBasicShapes = (
       break;
     }
     case "custom": {
+      points = points.map((item) => new THREE.Vector3(item.x, item.y, item.z));
+      //console.log("pass1");
+
       geometry = new ConvexBufferGeometry(points);
+      //console.log("pass2");
       material = new THREE.MeshBasicMaterial({
         color: color ? new THREE.Color(color) : 0xe7ff37,
         opacity: 0.5,
@@ -159,7 +211,9 @@ const addBasicShapes = (
   }
 
   let mesh = new THREE.Mesh(geometry, material);
+  //console.log("pass3");
   let edges = new THREE.EdgesGeometry(geometry);
+  //console.log("pass4");
   let line = new THREE.LineSegments(
     edges,
     new THREE.LineBasicMaterial({ color: 0xffffff })
@@ -171,11 +225,36 @@ const addBasicShapes = (
   if (rotation) {
     mesh.rotation.set(rotation.x, rotation.y, rotation.z);
     line.rotation.set(rotation.x, rotation.y, rotation.z);
+    rotation = new THREE.Vector3(rotation.x, rotation.y, rotation.z);
   }
-  /*const wrapper = new THREE.Object3D();
-  wrapper.add(mesh, line);
-  props.basicComponents.controls.addObject(wrapper);
-  props.basicComponents.scene.add(wrapper);*/
+  const listOfTextGeo = [];
+  if (type !== "custom") {
+    const listOfVertices = getVerticesWithText(mesh, type, position);
+    for (let vertext of listOfVertices) {
+      const textGeo = createTextGeoFromPosition(
+        vertext.point,
+        vertext.text,
+        rotation,
+        position
+      );
+      props.basicComponents.scene.add(textGeo);
+      //console.log("added")
+      listOfTextGeo.push({
+        trueText: vertext.text,
+        position: vertext.point,
+        text: textGeo,
+      });
+    }
+    props.reduxSetPoint([...props.basicComponents.points, ...listOfTextGeo]);
+    updatePoints();
+  } else {
+    //TODO
+    /*for (let point of points) {
+      listOfTextGeo.push({
+      })
+    }*/
+    position = getCenterPoint(mesh);
+  }
   props.basicComponents.scene.add(mesh, line);
   props.reduxAddShape({
     object: mesh,
@@ -186,10 +265,11 @@ const addBasicShapes = (
     id: props.basicComponents.shapes.length,
     rotation: rotation,
     position: position,
+    points: listOfTextGeo,
   });
   props.getShapesCallback(props.basicComponents.shapes);
 };
-export const addShapes = (props, shapes) => {
+export const addShapes = (props, shapes, updatePoints) => {
   for (let shape of shapes) {
     if (shape.item.type) {
       addBasicShapes(
@@ -200,7 +280,8 @@ export const addShapes = (props, shapes) => {
         shape.item.rotation,
         shape.item.color,
         shape.item.points,
-        shape.item.name
+        shape.item.name,
+        updatePoints
       );
     }
   }
@@ -227,7 +308,7 @@ export const loadSavedState = (props, scene, updatePoints) => {
   let points = [];
   for (let point of data.points) {
     const vertex = point.position;
-    const text = createTextGeoFromPosition(vertex, point.trueText);
+    const text = createTextGeoFromPosition(vertex, point.trueText, null, null);
     points.push({
       text: text,
       position: vertex,
@@ -239,12 +320,28 @@ export const loadSavedState = (props, scene, updatePoints) => {
   updatePoints();
   let shapesHolder = [];
   for (let shape of data.shapes) {
+    let shapePoints = [];
     const object = loader.parse(shape.object);
     const edges = drawEdgesFromGeo(
       object.geometry,
       shape.rotation,
-      shape.position
+      shape.type === "custom" ? null : shape.position
     );
+    for (let point of shape.points) {
+      const vertex = point.position;
+      const text = createTextGeoFromPosition(
+        vertex,
+        point.trueText,
+        shape.rotation,
+        shape.position
+      );
+      shapePoints.push({
+        text: text,
+        position: vertex,
+        trueText: point.trueText,
+      });
+      //scene.add(text);
+    }
     //const wrapper = new THREE.Object3D();
     //wrapper.add(object, edges);
     //props.basicComponents.controls.addObject(wrapper);
@@ -258,8 +355,9 @@ export const loadSavedState = (props, scene, updatePoints) => {
       id: shape.id,
       rotation: shape.rotation,
       position: shape.position,
+      points: shapePoints,
     });
   }
   props.reduxSetShape(shapesHolder);
   props.getShapesCallback(props.basicComponents.shapes);
-}
+};

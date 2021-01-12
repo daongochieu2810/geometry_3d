@@ -402,7 +402,7 @@ export default function BaseLayoutScreen(props) {
           <Text
             style={{
               textAlign: "center",
-              height: SCREEN_HEIGHT / 19,
+              height: SCREEN_HEIGHT / 18,
               textAlignVertical: "center",
             }}
           >

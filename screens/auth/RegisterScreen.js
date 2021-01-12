@@ -83,7 +83,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               autoCapitalize="none"
-              onChangeText={(nameInput) => setName(() => nameInput)}
+              onChangeText={(nameInput) => setName(() => nameInput.trim())}
               value={name}
             ></TextInput>
           </View>
@@ -92,7 +92,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               autoCapitalize="none"
-              onChangeText={(emailInput) => setEmail(() => emailInput)}
+              onChangeText={(emailInput) => setEmail(() => emailInput.trim())}
               value={email}
             ></TextInput>
           </View>
@@ -102,7 +102,7 @@ export default function RegisterScreen() {
               style={styles.input}
               secureTextEntry
               autoCapitalize="none"
-              onChangeText={(password) => setPassword(() => password)}
+              onChangeText={(password) => setPassword(() => password.trim())}
               value={password}
             ></TextInput>
           </View>

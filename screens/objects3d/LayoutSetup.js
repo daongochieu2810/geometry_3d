@@ -356,7 +356,7 @@ function LayoutSetup(props) {
     if (props.shapesConnect && props.shapesConnect.length > 0) {
       switch (props.action) {
         case "add_shapes": {
-          addShapes(props, props.shapesConnect);
+          addShapes(props, props.shapesConnect, updatePoints);
           break;
         }
         case "remove_shapes": {

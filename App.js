@@ -5,6 +5,7 @@ import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { enableScreens } from "react-native-screens";
+
 import HomeScreen from "./screens/home/HomeScreen";
 import LoadingScreen from "./screens/LoadingScreen";
 import SavedItemScreen from "./screens/user/SavedItemScreen";
@@ -67,6 +68,8 @@ const AppBottomNavigator = createBottomTabNavigator(
   {
     headerMode: "none",
     initialRouteName: "Home",
+    backBehavior: "order",
+    //tabBarComponent: (props) => <CustomTabBar {...props} />,
   }
 );
 const Object3DNavigator = createStackNavigator(
@@ -134,7 +137,7 @@ export default function App() {
             marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
           }}
         >
-          <AppNavigator/>
+          <AppNavigator />
         </View>
         <Toast ref={(ref) => Toast.setRef(ref)} />
       </PersistGate>
