@@ -74,7 +74,7 @@ function LoginScreen(props) {
             ></TextInput>
           </View>
           <View>
-            <Text style={styles.inputTitle}>Password</Text>
+            <Text textBreakStrategy={"simple"} style={styles.inputTitle}>Password</Text>
             <TextInput
               style={styles.input}
               secureTextEntry
@@ -84,20 +84,20 @@ function LoginScreen(props) {
             ></TextInput>
           </View>
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={{ color: "white", fontWeight: "500" }}>Sign in</Text>
+            <Text textBreakStrategy={"simple"} style={{ color: "white", fontWeight: "500" }}>Sign in</Text>
           </TouchableOpacity>
           <TouchableOpacity style={{...styles.button, marginTop: 10, backgroundColor: "#2bffea"}} onPress={() => {
             navigate("App", {}, NavigationActions.navigate({routeName: "HomeScreen"}))
           }}>
-            <Text style={{ color: "black", fontWeight: "500" }}>Guest session</Text>
+            <Text textBreakStrategy={"simple"} style={{ color: "black", fontWeight: "500" }}>Guest session</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={{ alignSelf: "center", marginTop: 32 }}
             onPress={() => navigate("Register")}
           >
-            <Text style={{ color: "white", fontSize: 13 }}>
+            <Text textBreakStrategy={"simple"} style={{ color: "white", fontSize: 13 }}>
               First time?
-              <Text style={{ color: "#478eff", fontWeight: "500" }}>
+              <Text textBreakStrategy={"simple"} style={{ color: "#478eff", fontWeight: "500" }}>
                 {" "}
                 Sign up!
               </Text>

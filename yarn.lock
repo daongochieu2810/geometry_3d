@@ -11422,6 +11422,14 @@ prompts@^2.3.2:
     kleur "^3.0.3"
     sisteransi "^1.0.4"
 
+prop-types@15.6.2:
+  version "15.6.2"
+  resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.2.tgz#05d5ca77b4453e985d60fc7ff8c859094a497102"
+  integrity sha512-3pboPvLiWD7dkI3qf3KbUe6hKFKa52w+AE0VCqECtf+QHAKgOL37tTaNCnuX1nAAQ4ZhyP+kYVKf8rLmJ/feDQ==
+  dependencies:
+    loose-envify "^1.3.1"
+    object-assign "^4.1.1"
+
 prop-types@15.7.2, prop-types@^15.5.10, prop-types@^15.5.6, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
@@ -11835,6 +11843,13 @@ react-native-screens@^2.9.0:
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/react-native-screens/-/react-native-screens-2.9.0.tgz#ead2843107ba00fee259aa377582e457c74f1f3b"
   integrity sha512-5MaiUD6HA3nzY3JbVI8l3V7pKedtxQF3d8qktTVI0WmWXTI4QzqOU8r8fPVvfKo3MhOXwhWBjr+kQ7DZaIQQeg==
+
+react-native-side-drawer@^1.2.8:
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/react-native-side-drawer/-/react-native-side-drawer-1.2.8.tgz#a5430b6ca6226b2bb0dccc4b2a5f09f5fa895ada"
+  integrity sha512-8WmX41ZfFNaXolxf40HQAiAy9YTr/ubMlZ7DIH4hagV/yTQFX9w0hBkH3N74bSD0AIGWp0bVIIVhcqdsJ/j5Wg==
+  dependencies:
+    prop-types "15.6.2"
 
 react-native-slider-color-picker@^2.0.1:
   version "2.0.1"

@@ -31,7 +31,7 @@ export default () => {
         marginLeft: isHorizontal ? 5 : 0,
       }}
       onPress={() => {
-        if (path != "") navigation.navigate(path);
+        if (path !== "") navigation.navigate(path);
         else if (eventEmitter != null) {
           eventEmitter.emit("show_dialog", index);
         }
@@ -48,6 +48,7 @@ export default () => {
         resizeMode="contain"
       />
       <Text
+          textBreakStrategy={"simple"}
         style={{
           color: "white",
           alignSelf: "center",
