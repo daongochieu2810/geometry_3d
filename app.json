@@ -19,7 +19,7 @@
     },
     "android": {
       "package": "com.dnh28102001.geometry3D",
-      "versionCode": 5,
+      "versionCode": 6,
       "permissions": []
     },
     "web": {
