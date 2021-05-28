@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {AdMobBanner, AdMobRewarded} from "expo-ads-admob";
+import { AdMobBanner, AdMobRewarded } from "expo-ads-admob";
 import Constants from "expo-constants";
-import { ADS } from '../../secrets';
+import { ADS } from "../../secrets";
 import {
   Text,
   View,
@@ -15,14 +15,13 @@ import {
   Image,
 } from "react-native";
 import fb from "../../backend";
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 import { useNavigation } from "react-navigation-hooks";
 import { connect } from "react-redux";
 import actions from "../../actions";
 const useFulLinks = [
   {
-    url:
-      "https://www.universalclass.com/articles/math/geometry/understanding-three-dimensional-geometry.htm",
+    url: "https://www.universalclass.com/articles/math/geometry/understanding-three-dimensional-geometry.htm",
     text: "Understanding 3D Geometry",
   },
   {
@@ -30,8 +29,7 @@ const useFulLinks = [
     text: "Applied Geometry",
   },
   {
-    url:
-      "http://ife.ens-lyon.fr/publications/edition-electronique/cerme6/wg5-13-mithalal.pdf",
+    url: "http://ife.ens-lyon.fr/publications/edition-electronique/cerme6/wg5-13-mithalal.pdf",
     text: "3D Geometry and Learning of Mathematical Reasoning",
   },
   {
@@ -39,12 +37,12 @@ const useFulLinks = [
     text: "Formulas",
   },
 ];
-const testID = "ca-app-pub-3940256099942544/5224354917";
+/*const testID = "ca-app-pub-3940256099942544/5224354917";
 const testBannerID = "ca-app-pub-3940256099942544/6300978111";
 const productionId = ADS.reward1.productionId;
 const productionBannerId = ADS.banner3.productionId;
 const adRewardUnitID = Constants.isDevice && !__DEV__ ? productionId : testID;
-const adBannerUnitID = Constants.isDevice && !__DEV__ ? productionBannerId : testBannerID;
+const adBannerUnitID = Constants.isDevice && !__DEV__ ? productionBannerId : testBannerID;*/
 const mapDispatchToProps = (dispatch) => {
   return {
     reduxSetSaveItem: (items) => {
@@ -68,7 +66,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(AccountScreen);
 function AccountScreen(props) {
   const navigation = useNavigation();
   const [currUser, setCurrUser] = useState(fb.auth.currentUser);
-  useEffect(() => {
+  /*useEffect(() => {
     AdMobRewarded.setAdUnitID(adRewardUnitID).then(() => {
       try {
         AdMobRewarded.requestAdAsync();
@@ -97,17 +95,17 @@ function AccountScreen(props) {
         autoHide: true,
       });
     }
-  };
+  };*/
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <AdMobBanner
+    <SafeAreaView style={{ flex: 1 }}>
+      {/*<AdMobBanner
           bannerSize="fullBanner"
           adUnitID={adBannerUnitID} // Test ID, Replace with your-admob-unit-id
           servePersonalizedAds={true} // true or false
           onDidFailToReceiveAdWithError={() => {
             console.log("CANT");
           }}
-      />
+        />*/}
       {currUser ? (
         <View style={{ flex: 1, ...styles.container }}>
           <View
@@ -170,7 +168,12 @@ function AccountScreen(props) {
         </View>
       ) : (
         <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center", ...styles.container }}
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            ...styles.container,
+          }}
         >
           <Text>You are in a guest session</Text>
           <TouchableOpacity
