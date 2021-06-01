@@ -191,7 +191,7 @@ function AccountScreen(props) {
           </TouchableOpacity>
         </View>
       )}
-      <TouchableOpacity
+      {/*<TouchableOpacity
         style={{
           paddingHorizontal: 20,
           paddingVertical: 10,
@@ -205,7 +205,7 @@ function AccountScreen(props) {
         }}
       >
         <Text style={{ textAlign: "center" }}>Watch an Ad to support me!</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>*/}
     </SafeAreaView>
   );
 }
